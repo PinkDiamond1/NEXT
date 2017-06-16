@@ -1,1 +1,1 @@
-# place holder for interface to Vowpal Wabbit
+from .myApp import *
