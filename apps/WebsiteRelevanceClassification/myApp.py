@@ -50,7 +50,7 @@ class MyApp:
         # VW STuff here
 
         importance = [1]
-        butler.algorithms.set(key='importance', importance)# array of importances
+        butler.algorithms.set(key='importance', value=importance)# array of importances
 
     def processAnswer(self, butler, alg, args):
         # part 3 of Scott Sivert's suggestion

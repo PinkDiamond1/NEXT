@@ -2,4 +2,5 @@ boto
 requests
 ply
 joblib
-git+git://github.com/robinsonkwame/wabbit_wappa # for access to vowpal wabbit; submitted PR to wabbit_wappa
+git+git://github.com/robinsonkwame/wabbit_wappa # base library for access to vowpal wabbit; submitted PR to wabbit_wappa
+caerbannog # friendly API for VW access (ActiveRabbit)

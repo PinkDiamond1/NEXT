@@ -1,7 +1,7 @@
 import numpy as np
 import next.utils as utils
 # could import a vw_api style class
-from vw_api import VWAP
+from vw_api import VWAPI
 
 # Constant parameters pertaint to website relevance alg
 api = VWAPI()
