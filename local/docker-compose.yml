@@ -50,7 +50,6 @@ minionworker:
    - PYTHONPATH=:/next_backend
 ####################################
 
-
 ######### API #########
 nextbackenddocker:
   build: /hdd/work/NEXT/next/base_docker_image
