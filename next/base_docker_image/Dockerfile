@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     python-pandas \
     python-matplotlib \
     python-ply \
-    numactl
+    numactl \
+    git
 
 # Put in place because ran into bug with pip (!)
 RUN python -m pip install -U pip
@@ -28,4 +29,3 @@ RUN \
 # Install python dependencies for next_backend
 ADD requirements.txt /requirements.txt
 RUN pip install -U -r requirements.txt
-
