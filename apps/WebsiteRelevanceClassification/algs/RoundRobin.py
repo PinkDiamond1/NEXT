@@ -1,10 +1,10 @@
 import numpy as np
 import next.utils as utils
 # could import a vw_api style class
-from vw_api import VWAPIWebsiteRelevance
+from vw_api import VWAP
 
 # Constant parameters pertaint to website relevance alg
-api = VWAPIWebsiteRelevance()
+api = VWAPI()
 
 class MyAlg:
     def initExp(self,
@@ -13,20 +13,20 @@ class MyAlg:
                 d,
                 failure_probability,
                 bit_precision,
-                vw_command_line_arguments):
-        #,
-        #port=api.PORT):
+                vw_command_line_arguments,
+                port=api.PORT):
 
-        # Save the number of targets, dimension, and initialize how many times each target has been labeled and failure_probability to algorithm storage
+        # Save the number of targets, dimension, and initialize how many times
+        # each target has been labeled and failure_probability to algorithm storage
         butler.algorithms.set(key='n', value=n)
-        butler.algorithms.set(key='delta', value=failure_probability)
         butler.algorithms.set(key='d', value=d)
+        butler.algorithms.set(key='delta', value=failure_probability)
         butler.algorithms.set(key='target_index', value=0)
 
+        # Save off vowpal wabbit related initalization parameters
         butler.algorithms.set(key='vw_command_line_arguments', value=vw_command_line_arguments)
         butler.algorithms.set(key='bit_precision', value=bit_precision)
-        #butler.algorithms.set(key='port', value=port)
-        #butler.algorithms.set(key='name', value='VW')
+        butler.algorithms.set(key='port', value=port)
 
         # init importances
         importance = [1] # or could query model?

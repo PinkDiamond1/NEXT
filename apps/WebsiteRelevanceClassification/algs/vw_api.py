@@ -1,4 +1,4 @@
-class VWAPIWebsiteRelevance(object):
+class VWAPI(object):
     """
     Simple class for defining a set of
     instatiation parameters for vowpal wabbit, access to

@@ -2,3 +2,4 @@ boto
 requests
 ply
 joblib
+git+git://github.com/robinsonkwame/wabbit_wappa # for access to vowpal wabbit; submitted PR to wabbit_wappa
