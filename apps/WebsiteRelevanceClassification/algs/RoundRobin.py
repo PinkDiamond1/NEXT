@@ -1,14 +1,36 @@
 import numpy as np
 import next.utils as utils
+# could import a vw_api style class
+from vw_api import VWAPIWebsiteRelevance
 
+# Constant parameters pertaint to website relevance alg
+api = VWAPIWebsiteRelevance()
 
 class MyAlg:
-    def initExp(self, butler, n, d, failure_probability):
+    def initExp(self,
+                butler,
+                n,
+                d,
+                failure_probability,
+                bit_precision,
+                vw_command_line_arguments):
+        #,
+        #port=api.PORT):
+
         # Save the number of targets, dimension, and initialize how many times each target has been labeled and failure_probability to algorithm storage
         butler.algorithms.set(key='n', value=n)
         butler.algorithms.set(key='delta', value=failure_probability)
         butler.algorithms.set(key='d', value=d)
         butler.algorithms.set(key='target_index', value=0)
+
+        butler.algorithms.set(key='vw_command_line_arguments', value=vw_command_line_arguments)
+        butler.algorithms.set(key='bit_precision', value=bit_precision)
+        #butler.algorithms.set(key='port', value=port)
+        #butler.algorithms.set(key='name', value='VW')
+
+        # init importances
+        importance = [1] # or could query model?
+        butler.algorithms.set(key='importance', value=n*importance) # array of importances, all are
 
         # Initialize the weight to an empty list of 0's
         butler.algorithms.set(key='weights', value=[0] * (d + 1))

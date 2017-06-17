@@ -9,6 +9,13 @@ initExp:
     d:
       description: Number of elements in a single feature vector.
       type: num
+    bit_precision:
+      type: num
+      description: Number of bits in the feature space (see vw)
+    vw_command_line_arguments:
+      type: str
+      description: other non specified vw arguments
+
   rets:
     type: bool
     description: A boolean indiciating if the algorithm initialization succeeded or failed
