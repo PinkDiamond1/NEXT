@@ -67,9 +67,11 @@ docker-compose -f ../next/vowpal_wabbit_image/vw-relevance.yaml stop
 echo "Starting vowpal wabbit containers"
 docker-compose -f ../next/vowpal_wabbit_image/vw-relevance.yaml up -d --remove-orphans
 #docker-compose -f ../next/vowpal_wabbit_image/vw-product.yaml up -d --remove-orphans
+# note: should be a way to read any vw container modles in/pass as args
 
 #echo "Stopping any existing machines..."
 docker-compose stop
+# note: is there a way to catch ctrl-c in this and dump vw container models to disk?
 
 #echo "Starting a machine and all the dependeicies"
 docker-compose up
