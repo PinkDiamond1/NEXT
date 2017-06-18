@@ -1,5 +1,5 @@
 #import docker # would've been nice but no docker-compose like functionality
-import wabbit_wrappa
+import wabbit_wappa
 
 # Provide access to VWAPI
 class VWAPI(object):
@@ -7,12 +7,12 @@ class VWAPI(object):
     Simple class for defining a set of
     instatiation parameters for vowpal wabbit, access to
     """
-    PORT = 7000
     def __init__(self, task='relevance'):
         # both vowpal wabbit relevance and product are initated by the NextML start up process
         # just need to bind a socket here.
+        self.DEFAULT_PORT = 7000
 
-        PORT = PORT if task == 'relevance' else 9000 # for product
+        PORT = self.DEFAULT_PORT if task == 'relevance' else 9000 # for product
         # get socket to vowpal wabbit process (stood up by NextML)
         self.vw = wabbit_wappa.VW(daemon_ip='localhost',
                                   active_mode=True,
@@ -22,21 +22,34 @@ class VWAPI(object):
         # should really close the socket on class destruction
         pass
 
-    def get_bulk_importances(self, examples, predictions=False):
+    def get_bulk_responses(self, examples):
         # see: https://github.com/JohnLangford/vowpal_wabbit/wiki/Daemon-example
-        # basically, send a return to delimit each example, vw will respond back similarly
+        # basically, send a newline to delimit each example, vw will respond back similarly
 
-        # may need to unpack examples/answers at the api side
-        ret = None
-        responses = self.vw.get_prediction(examples)# can wabbit wappa get bulk predictions?
+        # First convert raw examples into a vw friendly format...
 
-        importance_responses = responses.importance # can wabbit wappa return bulk importances?
-        if predictions:
-            prediction_responses = responses.prediction
+        # note: this is task and data format specific:
+        #       here we assume an array of floats
+        vw_examples  = []
+        # 8 bytes per float, count prediction, importance, 2 bytes for new
+        # line and space between
+        max_bytes_per_line = 8+8+2
+        num_examples = len(examples)
 
-        ret = (importance_responses, prediction_responses) if predictions else importance_responses
+        for example in examples:
+            vw_examples.append(wabbit_wappa.Namespace('default',
+                        features = [('col'+str(idx), value)
+                                        for idx, value in enumerate(example)]))
 
-        return ret
+        to_send_examples = '\n'.join([self.vw.make_line(namespaces=[f])
+                                        for f in vw_examples])
 
-    def get_bulk_predictions(self, examples):
-        return self.get_importance(examples, predictions=True)
+        # get responses ...
+        self.vw.vw_process.sock.sendall(to_send_examples)
+        raw_responses = self.vw.vw_process.sock.recv(num_examples*max_bytes_per_line+10)# +10 extra just in case
+        responses = [wabbit_wapp.VWResult(r, active_mode=True) for r in res.split()]
+
+        assert len(responses) == num_examples,\
+            "get_bulk_responses, number recv'ed does not match number examples sent! sent {}, recved {}".format(num_examples, len(responses))
+        # can access .prediction or .importance attribute
+        return responses
