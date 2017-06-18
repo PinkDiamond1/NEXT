@@ -7,3 +7,5 @@ services:
       container_name: vw_relevance
       ports:
           - "0.0.0.0:7000:7000"
+      volumes:
+          - ./saved_models:/saved_models

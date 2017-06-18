@@ -60,8 +60,17 @@ git_hash="$(git rev-parse HEAD)"
 sed -i -e 's|{{NEXT_DIR}}|'"$dir"'|g' docker-compose.yml
 sed -i -e 's|{{GIT_HASH}}|'"$git_hash"'|g' docker-compose.yml
 
+echo "Stopping any existing vowpal wabbit containers"
+docker-compose -f ../next/vowpal_wabbit_images/vw-relevance.yaml stop
+#docker-compose -f ../next/vowpal_wabbit_images/vw-product.yaml stop
+
+echo "Starting vowpal wabbit containers"
+docker-compose -f ../next/vowpal_wabbit_images/vw-relevance.yaml up -d
+#docker-compose -f ../next/vowpal_wabbit_images/vw-product.yaml up -d
+
 echo "Stopping any existing machines..."
 docker-compose stop
 
 echo "Starting a machine and all the dependeicies"
 docker-compose up
+

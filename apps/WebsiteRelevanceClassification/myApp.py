@@ -1,7 +1,6 @@
 import json
 import next.utils as utils
 import next.apps.SimpleTargetManager
-#from vw_api import VWAPIWebsiteRelevance
 
 class MyApp:
     def __init__(self, db):
