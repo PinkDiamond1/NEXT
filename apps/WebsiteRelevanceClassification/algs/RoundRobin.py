@@ -1,10 +1,12 @@
 import numpy as np
 import next.utils as utils
-# could import a vw_api style class
+# note on VWAPI
+# We are to instantiate it and delete it when we're done
+# it actually connects a socket to the the VW docker container and
+# the socket isn't easily marshalled or shared so it's better to tear it
+# down when done. We only use VWAPI every so often to update key alg data
+# so its use is amortized over time.
 from vw_api import VWAPI
-
-# Constant parameters pertaint to website relevance alg
-api = VWAPI()
 
 class MyAlg:
     def initExp(self,

@@ -7,6 +7,18 @@ class VWAPI(object):
     """
     Simple class for defining a set of
     instatiation parameters for vowpal wabbit, access to
+
+    Example Use:
+    vw = VWAPI()
+    res = vw.get_bulk_responses([[1,2,3], [3,4,5^]])
+    print str(res[0]) + " is the first response"
+    if res[0].importance > 0:
+        print "This response has some importances attached to it"
+
+    vw.vw.close() # del seems to take a while
+    del vw
+
+    # ... do somethign with the res variable ...
     """
     def __init__(self, task='relevance'):
         # both vowpal wabbit relevance and product are initated by the NextML start up process
@@ -35,15 +47,19 @@ class VWAPI(object):
     def recvall(self, sock, num_examples, buffer_size=4096):
         chunk = True
         ret = []
-        while num_examples and chunk:
+        while num_examples > 0 and chunk:
             chunk = sock.recv(buffer_size)# todo: should we have a timeout socket? This will block.
             ret.append(chunk)
-            num_examples = num_examples - 1
+            #num_examples = num_examples - 1
+
+            # so vw can actually return one or multiple examples per tcp response
+            # ... we need to identify how many example were returned and decrement
+            # appropriately. We trim the trailing new line to more easily count.
+            num_examples = num_examples - len(chunk[:-1].split('\n'))
 
         # VW returns a new line on last line but we .split() raw responses
         # so we leave off the last new line so that we may easily parse the response
         return "".join(ret)[:-1]
-
 
     def to_vw_examples(self,
                        examples,
@@ -68,7 +84,6 @@ class VWAPI(object):
             raise NotImplementedError, "to_vw_examples: example_format is not supproted!"
 
         return vw_examples
-
 
     def get_bulk_responses(self, examples, business_name=None, region=None):
         # see: https://github.com/JohnLangford/vowpal_wabbit/wiki/Daemon-example
