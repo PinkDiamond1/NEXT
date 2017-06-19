@@ -45,29 +45,48 @@ class VWAPI(object):
         return "".join(ret)[:-1]
 
 
-    def get_bulk_responses(self, examples):
+    def to_vw_examples(self,
+                       examples,
+                       example_format='numerical vector',
+                       business_name=None,
+                       region=None):
+        vw_examples  = []
+        num_examples = len(examples)
+
+        if 'numerical vector' == example_format:
+            assert isinstance(examples[0], type([])), "get_bulk_responses: Examples are not in expect numerical array format!"
+
+            for example in examples:
+                vw_examples.append(wabbit_wappa.Namespace('default',
+                            features = [('col'+str(idx), value)
+                                            for idx, value in enumerate(example)]))
+        elif 'string vector' == example_format:
+            pass # stub for treating websites as a long sequence of strings
+        elif 'self interacting string vector' == example_format:
+            pass # stub for treating websites as strings, along with checking the degree a business name, region is fuzzily present
+        else:
+            raise NotImplementedError, "to_vw_examples: example_format is not supproted!"
+
+        return vw_examples
+
+
+    def get_bulk_responses(self, examples, business_name=None, region=None):
         # see: https://github.com/JohnLangford/vowpal_wabbit/wiki/Daemon-example
         # basically, send a newline to delimit each example, vw will respond back similarly
 
         # First convert raw examples into a vw friendly format...
         # note: this is task and data format specific: here we assume an array of floats
-        vw_examples  = []
         num_examples = len(examples)
-
-        assert isinstance(examples[0], type([])), "get_bulk_responses: Examples are not in expect numerical array format!"
-
-        for example in examples:
-            vw_examples.append(wabbit_wappa.Namespace('default',
-                        features = [('col'+str(idx), value)
-                                        for idx, value in enumerate(example)]))
+        vw_examples = self.to_vw_examples(examples, business_name=business_name, region=region)
 
         # we append a newline at end re: Daemon example
         to_send_examples = '\n'.join([self.vw.make_line(namespaces=[f])[:-1]
                                         for f in vw_examples]) + '\n'
 
+
         # get responses ...
         self.vw.vw_process.sock.sendall(to_send_examples)
-        raw_responses = self.recvall(self.vw.vw_process.sock, num_examples)
+        raw_responses = self.recvall(self.vw.vw_process.sock, num_examples=num_examples)
         responses = [wabbit_wappa.VWResult(r, active_mode=True) for r in raw_responses.split('\n')]
 
         assert len(responses) == num_examples,\
