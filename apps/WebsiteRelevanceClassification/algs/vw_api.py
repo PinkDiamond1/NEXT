@@ -1,5 +1,6 @@
 #import docker # would've been nice but no docker-compose like functionality
 import wabbit_wappa
+import socket
 
 # Provide access to VWAPI
 class VWAPI(object):
@@ -14,40 +15,60 @@ class VWAPI(object):
 
         PORT = self.DEFAULT_PORT if task == 'relevance' else 9000 # for product
         # get socket to vowpal wabbit process (stood up by NextML)
+
+        # note: Should I enable socket.SO_REUSEADDR? I don't think it's needed, esp if
+        # the instance is deleted after use (closed socket). Very important to delete it though
+
+        # note: The vw.vw_process.sock is never really meant to be shutdown during normal use
         self.vw = wabbit_wappa.VW(daemon_ip='localhost',
                                   active_mode=True,
                                   daemon_mode=True,
                                   port=PORT)
 
-        # should really close the socket on class destruction
-        pass
+        # can't do this after the fact ...
+        #self.vw.vw_process.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+    def __del__(self): # in case we del an instance and or pass out of scope
+        self.vw.close()
+
+    # utility function to receive same number of responses as examples sent
+    def recvall(self, sock, num_examples, buffer_size=4096):
+        chunk = True
+        ret = []
+        while num_examples and chunk:
+            chunk = sock.recv(buffer_size)# todo: should we have a timeout socket? This will block.
+            ret.append(chunk)
+            num_examples = num_examples - 1
+
+        # VW returns a new line on last line but we .split() raw responses
+        # so we leave off the last new line so that we may easily parse the response
+        return "".join(ret)[:-1]
+
 
     def get_bulk_responses(self, examples):
         # see: https://github.com/JohnLangford/vowpal_wabbit/wiki/Daemon-example
         # basically, send a newline to delimit each example, vw will respond back similarly
 
         # First convert raw examples into a vw friendly format...
-
-        # note: this is task and data format specific:
-        #       here we assume an array of floats
+        # note: this is task and data format specific: here we assume an array of floats
         vw_examples  = []
-        # 8 bytes per float, count prediction, importance, 2 bytes for new
-        # line and space between
-        max_bytes_per_line = 8+8+2
         num_examples = len(examples)
+
+        assert isinstance(examples[0], type([])), "get_bulk_responses: Examples are not in expect numerical array format!"
 
         for example in examples:
             vw_examples.append(wabbit_wappa.Namespace('default',
                         features = [('col'+str(idx), value)
                                         for idx, value in enumerate(example)]))
 
-        to_send_examples = '\n'.join([self.vw.make_line(namespaces=[f])
-                                        for f in vw_examples])
+        # we append a newline at end re: Daemon example
+        to_send_examples = '\n'.join([self.vw.make_line(namespaces=[f])[:-1]
+                                        for f in vw_examples]) + '\n'
 
         # get responses ...
         self.vw.vw_process.sock.sendall(to_send_examples)
-        raw_responses = self.vw.vw_process.sock.recv(num_examples*max_bytes_per_line+10)# +10 extra just in case
-        responses = [wabbit_wapp.VWResult(r, active_mode=True) for r in res.split()]
+        raw_responses = self.recvall(self.vw.vw_process.sock, num_examples)
+        responses = [wabbit_wappa.VWResult(r, active_mode=True) for r in raw_responses.split('\n')]
 
         assert len(responses) == num_examples,\
             "get_bulk_responses, number recv'ed does not match number examples sent! sent {}, recved {}".format(num_examples, len(responses))
