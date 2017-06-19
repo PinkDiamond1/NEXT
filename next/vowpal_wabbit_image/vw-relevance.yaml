@@ -4,7 +4,7 @@ services:
       build: .
       image: vowpal_wabbit
       command: ["--save_resume --port 7000 --active --predictions /dev/null --daemon --audit"]
-      container_name: vw_relevance
+      container_name: vw_relevance_DEBUG
       ports:
           - "0.0.0.0:7000:7000"
       volumes:

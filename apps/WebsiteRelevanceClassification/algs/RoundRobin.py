@@ -1,5 +1,6 @@
 import numpy as np
 import next.utils as utils
+from collections import defaultdict
 # note on VWAPI
 # We are to instantiate it and delete it when we're done
 # it actually connects a socket to the the VW docker container and
@@ -9,35 +10,65 @@ import next.utils as utils
 from vw_api import VWAPI
 
 class MyAlg:
-    def initExp(self,
-                butler,
-                n,
-                d,
-                failure_probability,
-                bit_precision,
-                vw_command_line_arguments,
-                port=api.PORT):
+    def initExp(self, butler, n):
+        """
+        MyAlg.initExp
 
-        # Save the number of targets, dimension, and initialize how many times
-        # each target has been labeled and failure_probability to algorithm storage
+        Given n, number of examples, access to the butler object, we
+        a) set n as the number of examples
+        b) create a new object, importances, which is sorted list of
+        targetset indices in importance ranked order (most important first)
+        c) create a record of what examples have been answered and how
+        """
+
+        # get visible logging first
+        # this really does not seem to work :(
+        #butler.log('DebugLog', "I'm inside MyAlg")# does not appear to log
+
+        assert n != None, "\t alg, initExp: value n is None!"
+        # Save off (a) and (c) objects from above description
         butler.algorithms.set(key='n', value=n)
-        butler.algorithms.set(key='d', value=d)
-        butler.algorithms.set(key='delta', value=failure_probability)
-        butler.algorithms.set(key='target_index', value=0)
+        butler.algorithms.set(key='answered_targets', value = defaultdict(list))
 
-        # Save off vowpal wabbit related initalization parameters
-        butler.algorithms.set(key='vw_command_line_arguments', value=vw_command_line_arguments)
-        butler.algorithms.set(key='bit_precision', value=bit_precision)
-        butler.algorithms.set(key='port', value=port)
+        print('\t appear to have successfully set the butler...')
+        print('\t attempting to get importances, set importances key')
 
-        # init importances
-        importance = [1] # or could query model?
-        butler.algorithms.set(key='importance', value=n*importance) # array of importances, all are
+        # for b, from above description, get importancse and then store them off
+        # in ranked importance list
 
-        # Initialize the weight to an empty list of 0's
-        butler.algorithms.set(key='weights', value=[0] * (d + 1))
+        # note: we block on this call, that's okay beacuse we only init once.
+        # future calls should be done asynch
+        importances = self.get_importances(target_examples=butler.targets.get_targetset(butler.exp_uid))
+        butler.algorithms.set(key='importances', value=importances)
+
+        # ... might as well keep track of the number of reported answers for
+        # overall tracking purposes. Might be more appropriate in MyApp.py
         butler.algorithms.set(key='num_reported_answers', value=0)
         return True
+
+    def get_importances(self, target_examples):
+        print('\t in get importabces ...')
+        api = VWAPI()
+
+        print('\t getting targets ...')
+        utils.debug_print(str(target_examples))
+
+        examples = [example['meta']['features'] for example in target_examples]
+        print('\t calling my battle heavy get_bulk_responses...')
+        answers = api.get_bulk_responses(examples)
+
+        utils.debug_print(str(answers))
+
+        print('\t closing/shutting down api')
+        api.vw.close() # del doesn't seemt to close socket :-/
+        del api
+
+        raise NotImplementedError, 'Stopping riiiiight here'
+
+        print('\t returning importances, apply np.argsort')
+        print(np.argsort, importances)
+        importances = [answer.importance for answer in answers]
+        return np.argsort(importances) # ordered by importance on indices into target_examples
 
     def getQuery(self, butler, participant_uid):
         # Retrieve the number of targets and return the index of the one that has been sampled least

@@ -20,19 +20,23 @@ class VWAPI(object):
 
     # ... do somethign with the res variable ...
     """
-    def __init__(self, task='relevance'):
+    def __init__(self, task='relevance', host='VW_RELEVANCE'):
         # both vowpal wabbit relevance and product are initated by the NextML start up process
         # just need to bind a socket here.
         self.DEFAULT_PORT = 7000
+        self.host = host
 
+        HOST = self.host if host == 'VW_RELEVANCE' else host
         PORT = self.DEFAULT_PORT if task == 'relevance' else 9000 # for product
         # get socket to vowpal wabbit process (stood up by NextML)
 
         # note: Should I enable socket.SO_REUSEADDR? I don't think it's needed, esp if
         # the instance is deleted after use (closed socket). Very important to delete it though
 
+        print('\t attempting to conenct to: ', HOST, PORT)
+
         # note: The vw.vw_process.sock is never really meant to be shutdown during normal use
-        self.vw = wabbit_wappa.VW(daemon_ip='localhost',
+        self.vw = wabbit_wappa.VW(daemon_ip=HOST,
                                   active_mode=True,
                                   daemon_mode=True,
                                   port=PORT)

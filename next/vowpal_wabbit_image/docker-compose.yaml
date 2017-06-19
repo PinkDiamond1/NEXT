@@ -1,8 +1,8 @@
 version: '2'
 services:
-    vowpal_wabbit:
-      build: .
-      image: vowpal_wabbit
-      command: ["--save_resume --port 7000 --active --predictions /dev/null --daemon --audit"]
-      ports:
-          - "0.0.0.0:7000:7000"
+  vowpal_wabbit:
+    build: .
+    image: vowpal_wabbit
+    command: ["--save_resume --port 7000 --active --predictions /dev/null --daemon --audit"]
+    ports:
+        - "0.0.0.0:7000:7000"

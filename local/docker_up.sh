@@ -60,12 +60,12 @@ git_hash="$(git rev-parse HEAD)"
 sed -i -e 's|{{NEXT_DIR}}|'"$dir"'|g' docker-compose.yml
 sed -i -e 's|{{GIT_HASH}}|'"$git_hash"'|g' docker-compose.yml
 
-echo "Stopping any existing vowpal wabbit containers"
-docker-compose -f ../next/vowpal_wabbit_image/vw-relevance.yaml stop
+#echo "Stopping any existing vowpal wabbit containers"
+#docker-compose -f ../next/vowpal_wabbit_image/vw-relevance.yaml stop
 #docker-compose -f ../next/vowpal_wabbit_image/vw-product.yaml stop
 
-echo "Starting vowpal wabbit containers"
-docker-compose -f ../next/vowpal_wabbit_image/vw-relevance.yaml up -d --remove-orphans
+#echo "Starting vowpal wabbit containers"
+#docker-compose -f ../next/vowpal_wabbit_image/vw-relevance.yaml up -d --remove-orphans
 #docker-compose -f ../next/vowpal_wabbit_image/vw-product.yaml up -d --remove-orphans
 # note: should be a way to read any vw container modles in/pass as args
 

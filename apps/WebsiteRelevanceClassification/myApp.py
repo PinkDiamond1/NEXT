@@ -8,20 +8,25 @@ class MyApp:
         self.TargetManager = next.apps.SimpleTargetManager.SimpleTargetManager(db)
 
     def initExp(self, butler, init_algs, args):
+        """
+        initExp
+
+        Push examples to the TargetManager, pass examples to alg for importance order
+        sorting for follow on getQuery, processAnswer calls.
+
+        This function is pretty
+        light because the underlying algorithm requires no parameters (due to
+        it already be started up by nextml, defined in next/vowpal_wabbit_image/*.yaml
+        """
+
+        # set up targets as is
         args['n']  = len(args['targets']['targetset'])
+        self.TargetManager.set_targetset(butler.exp_uid,
+                                         args['targets']['targetset'])
 
-        args['d'] = 2**args['bit_precision']
-        args['d'] = len(args['targets']['targetset'][0]['meta']['features'])
+        alg_data = {'n': args['n']}
 
-        targets = sorted(args['targets']['targetset'],key=lambda x: x['target_id'])
-        self.TargetManager.set_targetset(butler.exp_uid, targets)
-        del args['targets']
-
-        alg_data = {'n': args['n'],
-                    'd': args['d'],
-                    'failure_probability': args['failure_probability'],
-                    'vw_command_line_arguments': args['vw_command_line_arguments'],
-                    'bit_precision': args['bit_precision']}
+        # allow the algorithm to create a importance ranked list of the targets
         init_algs(alg_data)
         return args
 
@@ -37,23 +42,23 @@ class MyApp:
         del target['meta']
         return {'target_indices':target}
 
-    def update_importance(butler, answer):
-        # part 2 of Scott Sivert's suggestion
-        # asynch call to update the importance
+    #def update_importance(butler, answer):
+    #    # part 2 of Scott Sivert's suggestion
+    #    # asynch call to update the importance
 
-        # unclear if should call into algs or call vw directly
-        # probably shoudl call into alg since it is called into by the other functions
+    #    # unclear if should call into algs or call vw directly
+    #    # probably shoudl call into alg since it is called into by the other functions
 
-        #alg({'call vw, get importances'}) ???
-        # push targes to vw, on predict(), get answer
-        # VW STuff here
+    #    #alg({'call vw, get importances'}) ???
+    #    # push targes to vw, on predict(), get answer
+    #    # VW STuff here
 
-        importance = [1]
-        butler.algorithms.set(key='importance', value=importance)# array of importances
+    #    importance = [1]
+    #    butler.algorithms.set(key='importance', value=importance)# array of importances
 
     def processAnswer(self, butler, alg, args):
         # part 3 of Scott Sivert's suggestion
-        butler.job(update_importance, butler, answer) # asynch importance update
+        #butler.job(update_importance, butler, answer) # asynch importance update
         # alg() will call .teach()
 
         query = butler.queries.get(uid=args['query_uid'])
