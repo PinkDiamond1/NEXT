@@ -1,12 +1,6 @@
 import numpy as np
 import next.utils as utils
 from collections import defaultdict
-# note on VWAPI
-# We are to instantiate it and delete it when we're done
-# it actually connects a socket to the the VW docker container and
-# the socket isn't easily marshalled or shared so it's better to tear it
-# down when done. We only use VWAPI every so often to update key alg data
-# so its use is amortized over time.
 from vw_api import VWAPI
 
 class MyAlg:
@@ -26,9 +20,9 @@ class MyAlg:
         #butler.log('DebugLog', "I'm inside MyAlg")# does not appear to log
 
         assert n != None, "\t alg, initExp: value n is None!"
-        # Save off (a) and (c) objects from above description
+        # Save off (a) and (c) objects from above description, and set answered indices
         butler.algorithms.set(key='n', value=n)
-        butler.algorithms.set(key='answered_targets', value = defaultdict(list))
+        butler.algorithms.set(key='answered_idxs', value=set())
 
         print('\t appear to have successfully set the butler...')
         print('\t attempting to get importances, set importances key')
@@ -46,13 +40,14 @@ class MyAlg:
         butler.algorithms.set(key='num_reported_answers', value=0)
         return True
 
-    def get_importances(self, target_examples):
-        print('\t in get importabces ...')
+    def get_importances(self, target_examples, update=False):
+        print('\t in get importances ...')
         api = VWAPI()
 
         print('\t getting targets ...')
         utils.debug_print(str(target_examples))
 
+        # assume target_examples are in perserved index order
         examples = [example['meta']['features'] for example in target_examples]
         print('\t calling my battle heavy get_bulk_responses...')
         answers = api.get_bulk_responses(examples)
@@ -63,56 +58,70 @@ class MyAlg:
         api.vw.close() # del doesn't seemt to close socket :-/
         del api
 
-        raise NotImplementedError, 'Stopping riiiiight here'
-
         print('\t returning importances, apply np.argsort')
-        print(np.argsort, importances)
         importances = [answer.importance for answer in answers]
-        return np.argsort(importances) # ordered by importance on indices into target_examples
+        ordered_importances = np.argsort(importances)
 
-    def getQuery(self, butler, participant_uid):
-        # Retrieve the number of targets and return the index of the one that has been sampled least
-        idx = butler.algorithms.get(key='target_index')
-        n = butler.algorithms.get(key='n')
-        butler.algorithms.set(key='target_index', value=(idx+1) % n)
+        if update:
+            butler.algorithms.set(key='importances', value=ordered_importances)
 
-        return idx
+        # ordered by importance on indices into target_examples
+        return ordered_importances
+
+    def get_n_importances(self, butler, n):
+        ret = None
+
+        importances = butler.algorithms.get(key='importances')
+        answered = butler.algorithms.get(key='answered_idxs')
+
+        filtered_importances = [importance for importance in importances if importance not in answered]
+
+        if filtered_importances:
+            ret = filtered_importances[0:n]# returns 0 : length of(importances)
+        return ret
+
+    def getQuery(self, butler):
+        importances = self.get_n_importances(butler, 5)
+        assert len(importances) > 0, 'getQuery: importances list is empty!'
+
+        return np.random.choice(importances, 1)[0]
+
+    def teach(self, butler, target_index, target_label):
+        api = VWAPI()
+
+        example = butler.targets.get_target_item(butler.exp_uid, target_index)
+        vw_example = api.to_vw_examples([example])
+
+        api.vw.send_example(target_label, features=vw_example)
+        api.vw.close()
+        del api
 
     def processAnswer(self, butler, target_index, target_label):
-        # S maintains a list of labelled items. Appending to S will create it.
-        butler.algorithms.append(key='S', value=(target_index, target_label))
         # Increment the number of reported answers by one.
         num_reported_answers = butler.algorithms.increment(key='num_reported_answers')
+        answered = butler.algorithms.append(key='answered_idxs', value=target_index)
 
-        # Run a model update job after every d answers
-        d = butler.algorithms.get(key='d')
-        if num_reported_answers % int(d) == 0:
-            butler.job('full_embedding_update', {}, time_limit=30)
+        # teach vowpal wabbit
+        butler.job('teach', {'target_label':target_label,
+                             'target_index':target_index,
+                             'butler':butler},
+                   time_limit=30)
+
+        # Update importances of examples
+        if num_reported_answers % int(3) == 0:
+            butler.job('get_importances',
+                            {'update':True,
+                             'target_examples'=butler.targets.get_targetset(butler.exp_uid)},
+                        time_limit=30)
+
+            # should save model here?
+
         return True
 
     def getModel(self, butler):
+        pass
+
+        # shoudl force save
         # The model is simply the vector of weights and a record of the number of reported answers.
         utils.debug_print(butler.algorithms.get(key=['weights', 'num_reported_answers']))
         return butler.algorithms.get(key=['weights', 'num_reported_answers'])
-
-    def full_embedding_update(self, butler, args):
-        # Main function to update the model.
-        labelled_items = butler.algorithms.get(key='S')
-        # Get the list of targets.
-        targets = butler.targets.get_targetset(butler.exp_uid)
-        # Extract the features form each target and then append a bias feature.
-        target_features = [targets[i]['meta']['features'] for i in range(len(targets))]
-        for feature_vector in target_features:
-            feature_vector.append(1.)
-        # Build a list of feature vectors and associated labels.
-        X = []
-        y = []
-        for index, label in labelled_items:
-            X.append(target_features[index])
-            y.append(label)
-        # Convert to numpy arrays and use lstsquares to find the weights.
-        X = np.array(X)
-        y = np.array(y)
-        weights = np.linalg.lstsq(X, y)[0]
-        # Save the weights under the key weights.
-        butler.algorithms.set(key='weights', value=weights.tolist())
