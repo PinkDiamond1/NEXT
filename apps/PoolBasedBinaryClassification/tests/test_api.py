@@ -4,13 +4,14 @@ import random
 import json
 import time
 import requests
-from scipy.linalg import norm
+#from scipy.linalg import norm
 from multiprocessing import Pool
 import os, sys
 try:
     import next.apps.test_utils as test_utils
 except:
     file_dir = '/'.join(__file__.split('/')[:-1])
+    file_dir = '.'
     sys.path.append('{}/../../../next/apps'.format(file_dir))
     import test_utils
 
@@ -71,6 +72,7 @@ def test_api(assert_200=True, num_objects=4, desired_dimension=1,
     exp_info = []
     for ell in range(num_experiments):
         initExp_response_dict, exp_info_ = test_utils.initExp(initExp_args_dict)
+        print('got response for exp, made a new one')
         exp_info += [exp_info_]
         exp_uid = initExp_response_dict['exp_uid']
 
@@ -79,6 +81,7 @@ def test_api(assert_200=True, num_objects=4, desired_dimension=1,
         # Test GET Experiment
         initExp_response_dict = test_utils.getExp(exp_uid)
 
+    print('generating particpants')
     # Generate participants
     ###################################
 

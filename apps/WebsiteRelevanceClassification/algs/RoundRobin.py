@@ -1,4 +1,5 @@
 import numpy as np
+import json
 import next.utils as utils
 from collections import defaultdict
 from vw_api import VWAPI
@@ -40,7 +41,7 @@ class MyAlg:
         butler.algorithms.set(key='num_reported_answers', value=0)
         return True
 
-    def get_importances(self, target_examples, update=False):
+    def get_importances(self, target_examples=None, update=False):
         print('\t in get importances ...')
         api = VWAPI()
 
@@ -80,39 +81,69 @@ class MyAlg:
             ret = filtered_importances[0:n]# returns 0 : length of(importances)
         return ret
 
-    def getQuery(self, butler):
+    def getQuery(self, butler, participant_uid):
         importances = self.get_n_importances(butler, 5)
         assert len(importances) > 0, 'getQuery: importances list is empty!'
 
         return np.random.choice(importances, 1)[0]
 
-    def teach(self, butler, target_index, target_label):
+    def call_get_importances(self, butler, args):
+        # proxy function to call get_importances since job signatures are different
+        if args:
+            target_examples = args['args']['target_examples']
+            update = args['args']['update']
+
+        self.get_importances(target_examples=target_examples,
+                             update=update)
+
+
+    def teach(self, butler, args):
+        print(args)
+        args = json.loads(args)
+        target_label = args['args']['target_label']
+        example = args['args']['example']
+
+        print('\t*** about to teach ...')
         api = VWAPI()
 
-        example = butler.targets.get_target_item(butler.exp_uid, target_index)
         vw_example = api.to_vw_examples([example])
 
         api.vw.send_example(target_label, features=vw_example)
         api.vw.close()
         del api
 
+        print('\t*** ... taught')
+
     def processAnswer(self, butler, target_index, target_label):
         # Increment the number of reported answers by one.
         num_reported_answers = butler.algorithms.increment(key='num_reported_answers')
         answered = butler.algorithms.append(key='answered_idxs', value=target_index)
 
+        print('\t*** num answers: ', num_reported_answers, '\t answered ', str(answered))
+        print('\t*** target index: ', target_index, '\n\t\t target_label ', str(target_label))
+
+        print('\t*** about to teach vowpal wabbit with this one answer')
         # teach vowpal wabbit
-        butler.job('teach', {'target_label':target_label,
-                             'target_index':target_index,
-                             'butler':butler},
+        example = butler.targets.get_target_item(butler.exp_uid, target_index)['meta']['features']
+
+        print('\t *** is example: ',  example)
+
+        butler.job('teach',
+                   json.dumps({'args':
+                                {'target_label':target_label,
+                                 'example':example}
+                              }),
                    time_limit=30)
 
         # Update importances of examples
         if num_reported_answers % int(3) == 0:
-            butler.job('get_importances',
-                            {'update':True,
-                             'target_examples'=butler.targets.get_targetset(butler.exp_uid)},
-                        time_limit=30)
+            print('\t about to get new imortances')
+            butler.job('call_get_importances',
+                       json.dumps({'args':
+                                       {'update':True,
+                                        'target_examples':butler.targets.get_targetset(butler.exp_uid)}
+                                   }),
+                       time_limit=30)
 
             # should save model here?
 

@@ -73,6 +73,9 @@ class VWAPI(object):
         vw_examples  = []
         num_examples = len(examples)
 
+        print('\t\t type:', type(examples), ' type[0]', type(examples[0]))
+        print(examples)
+
         if 'numerical vector' == example_format:
             assert isinstance(examples[0], type([])), "get_bulk_responses: Examples are not in expect numerical array format!"
 

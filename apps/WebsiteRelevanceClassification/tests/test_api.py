@@ -4,28 +4,28 @@ import random
 import json
 import time
 import requests
-from scipy.linalg import norm
+#from scipy.linalg import norm
 from multiprocessing import Pool
 import os, sys
 try:
     import next.apps.test_utils as test_utils
 except:
-    file_dir = '/'.join(__file__.split('/')[:-1])
+    #file_dir = '/'.join(__file__.split('/')[:-1])
+    file_dir = '.'
     sys.path.append('{}/../../../next/apps'.format(file_dir))
     import test_utils
 
+import vw_api #? Do I need this
 
-app_id = 'PoolBasedBinaryClassification'
 
-def test_api(assert_200=True, num_objects=4, desired_dimension=1,
+app_id = 'WebsiteRelevanceClassification'
+
+def test_api(assert_200=True, num_objects=6,
                         total_pulls_per_client=5, num_experiments=1,
-                        num_clients=7):
-    true_weights = numpy.zeros(desired_dimension)
-    true_weights[0] = 1.
+                        num_clients=2):
+
     pool = Pool(processes=num_clients)
-    supported_alg_ids = ['RandomSamplingLinearLeastSquares',
-                         'RandomSamplingLinearLeastSquares',
-                         'RoundRobin']
+    supported_alg_ids = ['RoundRobin']
     alg_list = []
     for idx,alg_id in enumerate(supported_alg_ids):
         alg_item = {}
@@ -47,7 +47,7 @@ def test_api(assert_200=True, num_objects=4, desired_dimension=1,
 
     targetset = []
     for i in range(num_objects):
-        features = list(numpy.random.randn(desired_dimension))
+        features = list(numpy.random.randn(6))
         targetset.append({'primary_description': str(features),
                         'primary_type':'text',
                         'alt_description':'%d' % (i),
@@ -58,9 +58,8 @@ def test_api(assert_200=True, num_objects=4, desired_dimension=1,
     # Test POST Experiment
     print '\n'*2 + 'Testing POST initExp...'
     initExp_args_dict = {}
-    initExp_args_dict['app_id'] = 'PoolBasedBinaryClassification'
+    initExp_args_dict['app_id'] = app_id
     initExp_args_dict['args'] = {}
-    initExp_args_dict['args']['failure_probability'] = 0.01
     initExp_args_dict['args']['participant_to_algorithm_management'] = 'one_to_many' # 'one_to_one'    #optional field
     initExp_args_dict['args']['algorithm_management_settings'] = algorithm_management_settings #optional field
     initExp_args_dict['args']['alg_list'] = alg_list #optional field
@@ -128,7 +127,7 @@ def simulate_one_client(input_args):
         # generate simulated reward #
         # sleep for a bit to simulate response time
         ts = test_utils.response_delay()
-        target_label = numpy.sign(numpy.dot(x,true_weights))
+        target_label =  1 if random.random() > 0.5 else -1 #numpy.sign(numpy.dot(x,true_weights))
         response_time = time.time() - ts
 
         # test POST processAnswer
