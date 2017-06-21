@@ -83,10 +83,17 @@ class VWAPI(object):
                 vw_examples.append(wabbit_wappa.Namespace('default',
                             features = [('col'+str(idx), value)
                                             for idx, value in enumerate(example)]))
-        elif 'string vector' == example_format:
-            pass # stub for treating websites as a long sequence of strings
+
         elif 'self interacting string vector' == example_format:
-            pass # stub for treating websites as strings, along with checking the degree a business name, region is fuzzily present
+            pass # stub for treating websites as a long sequence of strings
+
+        elif 'string vector' == example_format:
+            assert isinstance(examples[0][0], str), "get_bulk_responses: Examples are not array of strings!"
+
+            for example in examples:
+                # added, verify works as expected
+                vw_examples.append(wabbit_wappa.Namespace('default', features = [value for value in example]))
+
         else:
             raise NotImplementedError, "to_vw_examples: example_format is not supproted!"
 
