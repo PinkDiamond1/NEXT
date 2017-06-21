@@ -41,7 +41,7 @@ class MyAlg:
         butler.algorithms.set(key='num_reported_answers', value=0)
         return True
 
-    def get_importances(self, target_examples=None, update=False):
+    def get_importances(self, butler=None, target_examples=None, update=False):
         print('\t in get importances ...')
         api = VWAPI()
 
@@ -87,13 +87,15 @@ class MyAlg:
 
         return np.random.choice(importances, 1)[0]
 
-    def call_get_importances(self, butler, args):
+    def call_get_importances(self, butler, args=None):
         # proxy function to call get_importances since job signatures are different
         if args:
+            args = json.loads(args)
             target_examples = args['args']['target_examples']
             update = args['args']['update']
 
         self.get_importances(target_examples=target_examples,
+                             butler=butler,
                              update=update)
 
 
@@ -108,7 +110,13 @@ class MyAlg:
 
         vw_example = api.to_vw_examples([example])
 
-        api.vw.send_example(target_label, features=vw_example)
+        print("\t*** vw_example: ", str(vw_example))
+
+        api.vw.add_namespaces(vw_example)
+
+        # important to send namespaces, not features, because
+        # to_vw_examples creates namespaces
+        api.vw.send_example(response=target_label)
         api.vw.close()
         del api
 
@@ -135,7 +143,7 @@ class MyAlg:
                               }),
                    time_limit=30)
 
-        # Update importances of examples
+        # Update importances of examples, use call_* for different signature
         if num_reported_answers % int(3) == 0:
             print('\t about to get new imortances')
             butler.job('call_get_importances',
