@@ -35,19 +35,9 @@
 <div class="row" style="height:50%">
   <!-- Center Target -->
   <div class="col-xs-12" id="center" >
-    {% if query.target_indices.primary_type == "image" or query.target_indices.primary_type == "img" %}
-    <img class="center-block" src={{ query.target_indices.primary_description }}></img>
-    {% elif query.target_indices.primary_type == "text" %}
     <div>
       <div>{{ query.target_indices.primary_description }}</div>
     </div>
-
-    {% elif query.target_indices.primary_type == "video" %}
-    <video width="320" height="240"  poster="http://jimpunk.net/Loading/wp-content/uploads/loading1.gif" controls autoplay loop>
-      <source src={{ query.target_indices.primary_description }} type="video/mp4">
-	Your browser does not support the video tag.
-    </video>
-    {% endif %}
   </div>
 </div>
 <br/>
