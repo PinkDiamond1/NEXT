@@ -1,8 +1,10 @@
 import numpy as np
 import json
 import next.utils as utils
+import random
 from collections import defaultdict
 from vw_api import VWAPI
+
 
 class MyAlg:
     def initExp(self, butler, n):
@@ -153,14 +155,11 @@ class MyAlg:
                                    }),
                        time_limit=30)
 
-            # should save model here?
+            butler.job('getModel', {}, time_limit=30)
 
         return True
 
-    def getModel(self, butler):
-        pass
-
-        # shoudl force save
-        # The model is simply the vector of weights and a record of the number of reported answers.
-        utils.debug_print(butler.algorithms.get(key=['weights', 'num_reported_answers']))
-        return butler.algorithms.get(key=['weights', 'num_reported_answers'])
+    def getModel(self, butler, args):
+        mock_precision = random.random()
+        num_answers = butler.algorithms.get(key='num_reported_answers')
+        return mock_precision, num_answers

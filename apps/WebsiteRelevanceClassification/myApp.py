@@ -1,4 +1,5 @@
 import json
+import random
 import next.utils as utils
 import next.apps.SimpleTargetManager
 
@@ -44,10 +45,11 @@ class MyApp:
         print(query)
         print(' target', target, 'target_label: ', target_label)
 
-        # could call getModel every n times...
-
         alg({'target_index':target['target_id'],'target_label':target_label})
         return {'target_index':target['target_id'],'target_label':target_label}
 
     def getModel(self, butler, alg, args):
-        return alg()
+        alg()
+
+        #num_answered = butler.algorithms.get(key='num_reported_answers')
+        #return {'weights' = random.random(), 'num_reported_answers':num_answered}
