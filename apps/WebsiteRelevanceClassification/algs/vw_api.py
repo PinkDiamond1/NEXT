@@ -67,14 +67,14 @@ class VWAPI(object):
 
     def to_vw_examples(self,
                        examples,
-                       example_format='numerical vector',
+                       example_format='string vector',
                        business_name=None,
                        region=None):
         vw_examples  = []
         num_examples = len(examples)
 
         print('\t\t type:', type(examples), ' type[0]', type(examples[0]))
-        print(examples)
+        print(examples[0:3])
 
         if 'numerical vector' == example_format:
             assert isinstance(examples[0], type([])), "get_bulk_responses: Examples are not in expect numerical array format!"
@@ -87,12 +87,15 @@ class VWAPI(object):
         elif 'self interacting string vector' == example_format:
             pass # stub for treating websites as a long sequence of strings
 
-        elif 'string vector' == example_format:
-            assert isinstance(examples[0][0], str), "get_bulk_responses: Examples are not array of strings!"
+        elif 'string vector' == example_format: # can be unicode too
+            print(examples[0][0], type(examples[0][0]))
+            print('\n', examples[0][0][0])
+
+            assert isinstance(examples[0][0], basestring), "get_bulk_responses: Examples are not array of strings!"
 
             for example in examples:
                 # added, verify works as expected
-                vw_examples.append(wabbit_wappa.Namespace('default', features = [value for value in example]))
+                vw_examples.append(wabbit_wappa.Namespace('default', features = example))
 
         else:
             raise NotImplementedError, "to_vw_examples: example_format is not supproted!"
@@ -114,7 +117,7 @@ class VWAPI(object):
 
 
         # get responses ...
-        self.vw.vw_process.sock.sendall(to_send_examples)
+        self.vw.vw_process.sock.sendall(to_send_examples.encode('utf-8'))
         raw_responses = self.recvall(self.vw.vw_process.sock, num_examples=num_examples)
         responses = [wabbit_wappa.VWResult(r, active_mode=True) for r in raw_responses.split('\n')]
 
