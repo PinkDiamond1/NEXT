@@ -36,3 +36,15 @@ processAnswer:
         target_label:
           description: The label in {-1,1} provided by participant of the target.
           type: num
+
+getModel:
+  rets:
+    type: dict
+    description: The current state of the model
+    values:
+      mock_precision:
+        type: num
+        description: Made up precision estimates
+      num_reported_answers:
+        type: num
+        description: The number of reported answers (for this algorithm)

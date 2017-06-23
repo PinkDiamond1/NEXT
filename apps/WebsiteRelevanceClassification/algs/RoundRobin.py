@@ -125,9 +125,12 @@ class MyAlg:
         print('\t*** ... taught')
 
     def processAnswer(self, butler, target_index, target_label):
+        # S maintains a list of labelled items. Appending to S will create it.
+        butler.algorithms.append(key='S', value=(target_index, target_label))
+
         # Increment the number of reported answers by one.
         num_reported_answers = butler.algorithms.increment(key='num_reported_answers')
-        answered = butler.algorithms.append(key='answered_idxs', value=target_index)
+        answered = butler.algorithms.append(key='answered_idxs', value=target_index) # redundant
 
         print('\t*** num answers: ', num_reported_answers, '\t answered ', str(answered))
         print('\t*** target index: ', target_index, '\n\t\t target_label ', str(target_label))
@@ -155,11 +158,17 @@ class MyAlg:
                                    }),
                        time_limit=30)
 
-            butler.job('getModel', {}, time_limit=30)
+            #butler.job('getModel', {}, time_limit=30)
 
         return True
 
-    def getModel(self, butler, args):
+    def getModel(self, butler):
+        alg_label = "RoundRobin"#args['alg_label']
         mock_precision = random.random()
-        num_answers = butler.algorithms.get(key='num_reported_answers')
-        return mock_precision, num_answers
+        #num_reported_answers = butler.experiment.get(key='num_reported_answers_for_' + alg_label)
+
+        butler.algorithms.set(key='mock_precision', value=mock_precision)
+        print  butler.algorithms.get(key=['mock_precision', 'num_reported_answers'])
+        #return butler.algorithms.get(key=['mock_precision', 'num_reported_answers'])
+        return {'ret':{'mock_precision':mock_precision,
+                'num_reported_answers': num_reported_answers}}

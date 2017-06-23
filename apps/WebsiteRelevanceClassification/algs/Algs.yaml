@@ -37,11 +37,13 @@ getModel:
     type: dict
     description: The current state of the model
     values:
-      weights:
-        type: list
-        description: The linear model weights
-        values:
-          type: num
+      #exp_uid:
+      #  type: str
+      #alg_label:
+      #  type: str
+      mock_precision:
+        type: num
+        description: a fake precision, calculated asynch
       num_reported_answers:
         type: num
         description: The number of reported answers (for this algorithm)
