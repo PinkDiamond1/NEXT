@@ -60,4 +60,4 @@ class MyApp:
         #mock_precision = random.random()
         #num_reported_answers = butler.experiment.get(key='num_reported_answers_for_' + alg_label)
         #return {'mock_precision': mock_precision, 'num_reported_answers': num_reported_answers}
-        alg()
+        return alg()

@@ -52,7 +52,7 @@ class MyAlg:
 
         # assume target_examples are in perserved index order
         examples = [example['meta']['features'] for example in target_examples]
-        print('\t calling my battle heavy get_bulk_responses...')
+        #print('\t calling my battle heavy get_bulk_responses...')
         answers = api.get_bulk_responses(examples)
 
         utils.debug_print(str(answers))
@@ -165,10 +165,22 @@ class MyAlg:
     def getModel(self, butler):
         alg_label = "RoundRobin"#args['alg_label']
         mock_precision = random.random()
-        #num_reported_answers = butler.experiment.get(key='num_reported_answers_for_' + alg_label)
+
+        # ?nextml bug, this returns None even though get the same call works in processAnswer above
+        num_reported_answers = butler.experiment.get(key='num_reported_answers')
 
         butler.algorithms.set(key='mock_precision', value=mock_precision)
-        print  butler.algorithms.get(key=['mock_precision', 'num_reported_answers'])
+        ret = butler.algorithms.get(key=['mock_precision', 'num_reported_answers'])
+        print ret
+
+        print('num reported', num_reported_answers, '<')
+        print type(num_reported_answers), type(mock_precision)
+
+        num_reported_answers = ret['num_reported_answers'] # to prove that we can make it non None
+        print('num reported', num_reported_answers, '<')
+        print type(num_reported_answers), type(mock_precision)
+
+        # this return is identical to get()
         #return butler.algorithms.get(key=['mock_precision', 'num_reported_answers'])
-        return {'ret':{'mock_precision':mock_precision,
-                'num_reported_answers': num_reported_answers}}
+        return {'mock_precision':mock_precision,
+                'num_reported_answers': num_reported_answers}

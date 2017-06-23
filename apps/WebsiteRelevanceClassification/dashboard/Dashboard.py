@@ -64,7 +64,7 @@ class MyAppDashboard(AppDashboard):
             for item in list_of_log_dict:
                 print('\n calculating ... :', algorithm)
                 num_reported_answers = item['num_reported_answers']
-                #mock_precision = item['mock_precision']
+                mock_precision = item['mock_precision']
 
                 #for q in test_S:
                 #    estimated_label = numpy.sign(numpy.dot( numpy.array(target_features[q[0]]), numpy.array(weights) ))
@@ -75,7 +75,7 @@ class MyAppDashboard(AppDashboard):
 
 
                 # debug: proves we can retrive model precision w/in context of NextML
-                err = mock_precision/len(test_S)# is this right?
+                err = mock_precision / num_reported_answers
                 x.append(num_reported_answers)
                 y.append(err)
 
