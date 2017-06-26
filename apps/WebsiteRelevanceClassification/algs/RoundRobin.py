@@ -139,15 +139,23 @@ class MyAlg:
         # teach vowpal wabbit
         example = butler.targets.get_target_item(butler.exp_uid, target_index)['meta']['features']
 
-        print('\t *** is example: ',  example)
+        #print('\t *** is example: ',  example)
 
-        butler.job('teach',
-                   json.dumps({'args':
-                                {'target_label':target_label,
-                                 'example':example}
-                              }),
-                   time_limit=30)
+        # Debug
 
+        # Create hold out set for accuracy evaluation
+        if not num_reported_answers % 4:
+            butler.job('teach',
+                       json.dumps({'args':
+                                    {'target_label':target_label,
+                                     'example':example}
+                                  }),
+                       time_limit=30)
+        else: # store off hold out example for proper evaluation testing
+            print('\t **** We held out an example, yay!')
+            butler.algorithms.append(key='hold_out', value=(target_index, target_label))
+
+        # Update Active Learning sampling ranking
         # Update importances of examples, use call_* for different signature
         if num_reported_answers % int(3) == 0:
             print('\t about to get new imortances')
@@ -179,6 +187,11 @@ class MyAlg:
         num_reported_answers = ret['num_reported_answers'] # to prove that we can make it non None
         print('num reported', num_reported_answers, '<')
         print type(num_reported_answers), type(mock_precision)
+
+        # Debug area for getting hold out accuracy
+
+
+
 
         # this return is identical to get()
         #return butler.algorithms.get(key=['mock_precision', 'num_reported_answers'])

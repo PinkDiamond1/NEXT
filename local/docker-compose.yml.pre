@@ -24,6 +24,8 @@ minionredis:
      - {{NEXT_DIR}}:/next_backend
     expose:
      - "6379"
+    stdin_open: true # to allow debugging
+    tty: true
 
 minionworker:
     build: {{NEXT_DIR}}/next/base_docker_image

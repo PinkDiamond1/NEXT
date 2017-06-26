@@ -24,6 +24,8 @@ minionredis:
      - /hdd/work/NEXT:/next_backend
     expose:
      - "6379"
+    stdin_open: true # to allow debugging
+    tty: true
 
 minionworker:
     build: /hdd/work/NEXT/next/base_docker_image
@@ -47,7 +49,7 @@ minionworker:
      - CELERY_DASHBOARD_WORKER_COUNT=1
      - CELERY_THREADS_PER_DASHBOARD_WORKER=2
      - CELERY_DASHBOARD_WORKER_PREFETCH=1
-     - GIT_HASH=61d9ba4ade9d3ed3bcad968e07694ecf57e926b2
+     - GIT_HASH=5ba85a1d406188c2c98907a69acdea66956b8d7c
      - PYTHONPATH=:/next_backend
 ####################################
 

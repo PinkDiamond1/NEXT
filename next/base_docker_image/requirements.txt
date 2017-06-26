@@ -11,6 +11,5 @@ mpld3
 pyyaml
 ply
 joblib
-
 # Vowpal Wabbit Related
 git+https://github.com/robinsonkwame/wabbit_wappa # base library for access to vowpal wabbit; submitted PR to wabbit_wappa
