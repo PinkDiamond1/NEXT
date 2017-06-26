@@ -135,7 +135,6 @@ class MyAlg:
         print('\t*** num answers: ', num_reported_answers, '\t answered ', str(answered))
         print('\t*** target index: ', target_index, '\n\t\t target_label ', str(target_label))
 
-        print('\t*** about to teach vowpal wabbit with this one answer')
         # teach vowpal wabbit
         example = butler.targets.get_target_item(butler.exp_uid, target_index)['meta']['features']
 
@@ -144,16 +143,18 @@ class MyAlg:
         # Debug
 
         # Create hold out set for accuracy evaluation
-        if not num_reported_answers % 4:
+        if (num_reported_answers % 4) == 0:
+            print('\t **** We held out an example, yay!')
+            butler.algorithms.append(key='hold_out', value=(target_index, target_label))
+        else: # store off hold out example for proper evaluation testing
+
+            print('\t*** about to teach vowpal wabbit with this one answer')
             butler.job('teach',
                        json.dumps({'args':
                                     {'target_label':target_label,
                                      'example':example}
                                   }),
                        time_limit=30)
-        else: # store off hold out example for proper evaluation testing
-            print('\t **** We held out an example, yay!')
-            butler.algorithms.append(key='hold_out', value=(target_index, target_label))
 
         # Update Active Learning sampling ranking
         # Update importances of examples, use call_* for different signature
@@ -189,8 +190,10 @@ class MyAlg:
         print type(num_reported_answers), type(mock_precision)
 
         # Debug area for getting hold out accuracy
-
-
+        hold_out = butler.algorithms.get(key='hold_out')
+        if hold_out: # during inital queries it can be null beause nothing was held out
+            print('\t *** len of hold out: ', len(hold_out)) # have length
+            #print(hold_out[-1]) # make sure we have something here... have
 
 
         # this return is identical to get()
