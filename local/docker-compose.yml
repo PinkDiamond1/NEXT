@@ -49,7 +49,7 @@ minionworker:
      - CELERY_DASHBOARD_WORKER_COUNT=1
      - CELERY_THREADS_PER_DASHBOARD_WORKER=2
      - CELERY_DASHBOARD_WORKER_PREFETCH=1
-     - GIT_HASH=84bfb7078b22c572c8b02b402cbff769656e904c
+     - GIT_HASH=618a92297bbaad4a5d619093a057cb2765f21dc0
      - PYTHONPATH=:/next_backend
 ####################################
 

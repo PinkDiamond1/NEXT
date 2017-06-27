@@ -26,6 +26,8 @@ class MyAlg:
         # Save off (a) and (c) objects from above description, and set answered indices
         butler.algorithms.set(key='n', value=n)
         butler.algorithms.set(key='answered_idxs', value=set())
+        #butler.algorithms.set(key='hold_out', value=set())
+        butler.algorithms.set(key='hold_out', value=4)
 
         print('\t appear to have successfully set the butler...')
         print('\t attempting to get importances, set importances key')
@@ -43,6 +45,19 @@ class MyAlg:
         butler.algorithms.set(key='num_reported_answers', value=0)
         return True
 
+    def train_learner(self):
+        """
+        As a simple way to maintain learner state we simply pass all
+        prior non-held out examples to it to train it (learners start up untrained)
+
+        This puts the storage onto NextML, in the database and avoides the need to
+        version and other save save off different learners.
+
+        If you want to train a unique learner simple use the NextML API to retrieve
+        the examples and transform them however is desired.
+        """
+        pass
+
     def get_importances(self, butler=None, target_examples=None, update=False):
         print('\t in get importances ...')
         api = VWAPI()
@@ -55,7 +70,7 @@ class MyAlg:
         #print('\t calling my battle heavy get_bulk_responses...')
         answers = api.get_bulk_responses(examples)
 
-        utils.debug_print(str(answers))
+        #utils.debug_print(str(answers))
 
         print('\t closing/shutting down api')
         api.vw.close() # del doesn't seemt to close socket :-/
@@ -112,7 +127,7 @@ class MyAlg:
 
         vw_example = api.to_vw_examples([example])
 
-        print("\t*** vw_example: ", str(vw_example))
+        #print("\t*** vw_example: ", str(vw_example))
 
         api.vw.add_namespaces(vw_example)
 
@@ -146,6 +161,8 @@ class MyAlg:
         if (num_reported_answers % 4) == 0:
             print('\t **** We held out an example, yay!')
             butler.algorithms.append(key='hold_out', value=(target_index, target_label))
+            k = butler.algorithms.get(key='hold_out')
+            print k, ' ... is our hold out set'
         else: # store off hold out example for proper evaluation testing
 
             print('\t*** about to teach vowpal wabbit with this one answer')
@@ -191,10 +208,31 @@ class MyAlg:
 
         # Debug area for getting hold out accuracy
         hold_out = butler.algorithms.get(key='hold_out')
+        print('\t ***', hold_out, ' is hold out')
+
         if hold_out: # during inital queries it can be null beause nothing was held out
             print('\t *** len of hold out: ', len(hold_out)) # have length
-            #print(hold_out[-1]) # make sure we have something here... have
+            print(hold_out[-1]) # make sure we have something here... have
 
+            # so here we have a hold out and we need to test with it
+            #examples = [example['meta']['features'] for example in butler.targets.get_targetset(butler.exp_uid)]
+            hold_out_features = [butler.targets.get_target_item(butler.exp_uid, value[0])['meta']['features']\
+                                    for value in hold_out]
+
+            print(len(held_out_examples))
+
+            api = api.VW_API()
+
+            answers = api.get_bulk_responses(held_out_features)
+            print('\t closing/shutting down api')
+            api.vw.close() # del doesn't seemt to close socket :-/
+            del api
+
+            print ' this is an answer! '
+            print answers[0], answers[0].response
+
+            # scores = [answer.response==held_out_example[1] for answer, held_out_example in zip(answers, held_out_examples)]
+            #mock_precision = sum(scores)/len(scores)
 
         # this return is identical to get()
         #return butler.algorithms.get(key=['mock_precision', 'num_reported_answers'])
