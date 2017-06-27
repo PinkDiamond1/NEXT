@@ -41,7 +41,7 @@ getModel:
       #  type: str
       #alg_label:
       #  type: str
-      mock_precision:
+      precision:
         type: num
         description: a fake precision, calculated asynch
       num_reported_answers:

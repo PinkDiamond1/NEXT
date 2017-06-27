@@ -64,18 +64,9 @@ class MyAppDashboard(AppDashboard):
             for item in list_of_log_dict:
                 print('\n calculating ... :', algorithm)
                 num_reported_answers = item['num_reported_answers']
-                mock_precision = item['mock_precision']
+                precision = item['precision']
 
-                #for q in test_S:
-                #    estimated_label = numpy.sign(numpy.dot( numpy.array(target_features[q[0]]), numpy.array(weights) ))
-                #    err += estimated_label*q[1]<0. #do the labels agree or not
-
-                #m = float(len(test_S))
-                #err = err/m
-
-
-                # debug: proves we can retrive model precision w/in context of NextML
-                err = mock_precision / num_reported_answers
+                err = int(precision*100)
                 x.append(num_reported_answers)
                 y.append(err)
 
@@ -101,15 +92,17 @@ class MyAppDashboard(AppDashboard):
 
         import matplotlib.pyplot as plt
         import mpld3
+
+        width = 0.8
         fig, ax = plt.subplots(subplot_kw=dict(axisbg='#EEEEEE'))
         for alg_dict in list_of_alg_dicts:
             ax.plot(alg_dict['x'],alg_dict['y'],label=alg_dict['legend_label'])
-        ax.set_xlabel('Number of answered queries')
-        ax.set_ylabel('Error on hold-out set')
+        ax.set_xlabel('Number of held out examples (#)')
+        ax.set_ylabel('Accuracy (%)')
         ax.set_xlim([x_min,x_max])
-        ax.set_ylim([y_min,y_max])
+        ax.set_ylim([y_min-width,y_max+width])
         ax.grid(color='white', linestyle='solid')
-        ax.set_title('Test Error', size=14)
+        ax.set_title('Website Relevance Accuracy on Held Out Examples (higher is better)' , size=14)
         legend = ax.legend(loc=2,ncol=3,mode="expand")
         for label in legend.get_texts():
             label.set_fontsize('small')

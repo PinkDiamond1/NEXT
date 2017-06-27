@@ -25,7 +25,7 @@ class MyAlg:
         assert n != None, "\t alg, initExp: value n is None!"
         # Save off (a) and (c) objects from above description, and set answered indices
         butler.algorithms.set(key='n', value=n)
-        #butler.algorithms.set(key='answered_idxs', value=set())# techincall sets can't be stored? Seems to work
+        butler.algorithms.set(key='answered_idxs', value=[])# techincall sets can't be stored? Seems to work
         #butler.algorithms.set(key='hold_out', value=set())
         #butler.experiment.set(key='hold_out', value=4)
 
@@ -90,7 +90,9 @@ class MyAlg:
         ret = None
 
         importances = butler.algorithms.get(key='importances')
-        answered = set(butler.algorithms.get(key='answered_idxs'))
+        answered = set()
+        if butler.algorithms.get(key='answered_idxs'):
+            answered = set(butler.algorithms.get(key='answered_idxs'))
 
         filtered_importances = [importance for importance in importances if importance not in answered]
 
@@ -189,32 +191,29 @@ class MyAlg:
         return True
 
     def getModel(self, butler):
-        alg_label = "RoundRobin"#args['alg_label']
-        mock_precision = random.random()
+        precision = random.random()
 
         # ?nextml bug, this returns None even though get the same call works in processAnswer above
         num_reported_answers = butler.experiment.get(key='num_reported_answers')
 
-        butler.algorithms.set(key='mock_precision', value=mock_precision)
-        ret = butler.algorithms.get(key=['mock_precision', 'num_reported_answers'])
+        butler.algorithms.set(key='precision', value=precision)
+        ret = butler.algorithms.get(key=['precision', 'num_reported_answers'])
         #print ret
-
-        print('num reported', num_reported_answers, '<')
-        print type(num_reported_answers), type(mock_precision)
 
         num_reported_answers = ret['num_reported_answers'] # to prove that we can make it non None
         print('num reported', num_reported_answers, '<')
-        print type(num_reported_answers), type(mock_precision)
+        print type(num_reported_answers), type(precision)
 
         # Debug area for getting hold out accuracy
-        hold_out = set(butler.experiment.get(key='hold_out'))
+        hold_out = None
+        if butler.experiment.get(key='hold_out'):
+            hold_out = set(butler.experiment.get(key='hold_out'))
         print('\t ***', hold_out, ' is hold out')
 
         if hold_out: # during inital queries it can be null beause nothing was held out
             print('\t *** len of hold out: ', len(hold_out)) # have length
 
             # so here we have a hold out and we need to test with it
-            #examples = [example['meta']['features'] for example in butler.targets.get_targetset(butler.exp_uid)]
             hold_out_features = [butler.targets.get_target_item(butler.exp_uid, value[0])['meta']['features']\
                                     for value in hold_out]
 
@@ -223,19 +222,15 @@ class MyAlg:
             api = VWAPI()
 
             answers = api.get_bulk_responses(hold_out_features)
-            print('\t closing/shutting down api')
             api.vw.close() # del doesn't seemt to close socket :-/
             del api
 
-            print ' this is an answer! '
-            print answers[0], answers[0].prediction
-            print answers
-
             scores = [answer.prediction == held_out_example[1] for answer, held_out_example in zip(answers, hold_out)]
-            print(scores)
-            mock_precision = sum(scores)/len(scores)
+            precision = sum(scores)/len(scores)
+
+            print(scores, precision)
 
         # this return is identical to get()
-        #return butler.algorithms.get(key=['mock_precision', 'num_reported_answers'])
-        return {'mock_precision':mock_precision,
+        #return butler.algorithms.get(key=['precision', 'num_reported_answers'])
+        return {'precision':precision,
                 'num_reported_answers': num_reported_answers}

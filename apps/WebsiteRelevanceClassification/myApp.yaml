@@ -42,7 +42,7 @@ getModel:
     type: dict
     description: The current state of the model
     values:
-      mock_precision:
+      precision:
         type: num
         description: Made up precision estimates
       num_reported_answers:
