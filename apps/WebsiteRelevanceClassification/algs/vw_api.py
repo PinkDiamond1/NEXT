@@ -74,7 +74,7 @@ class VWAPI(object):
         num_examples = len(examples)
 
         print('\t\t type:', type(examples), ' type[0]', type(examples[0]))
-        print(examples[0:3])
+        #print(examples[0:3])
 
         if 'numerical vector' == example_format:
             assert isinstance(examples[0], type([])), "get_bulk_responses: Examples are not in expect numerical array format!"
@@ -89,7 +89,7 @@ class VWAPI(object):
 
         elif 'string vector' == example_format: # can be unicode too
             print(examples[0][0], type(examples[0][0]))
-            print('\n', examples[0][0][0])
+            #print('\n', examples[0][0][0])
 
             assert isinstance(examples[0][0], basestring), "get_bulk_responses: Examples are not array of strings!"
 

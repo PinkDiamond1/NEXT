@@ -1,10 +1,10 @@
+from __future__ import division # so that 1/2 = 0.50, not 0
 import numpy as np
 import json
 import next.utils as utils
 import random
 from collections import defaultdict
 from vw_api import VWAPI
-
 
 class MyAlg:
     def initExp(self, butler, n):
@@ -25,9 +25,9 @@ class MyAlg:
         assert n != None, "\t alg, initExp: value n is None!"
         # Save off (a) and (c) objects from above description, and set answered indices
         butler.algorithms.set(key='n', value=n)
-        butler.algorithms.set(key='answered_idxs', value=set())
+        #butler.algorithms.set(key='answered_idxs', value=set())# techincall sets can't be stored? Seems to work
         #butler.algorithms.set(key='hold_out', value=set())
-        butler.algorithms.set(key='hold_out', value=4)
+        #butler.experiment.set(key='hold_out', value=4)
 
         print('\t appear to have successfully set the butler...')
         print('\t attempting to get importances, set importances key')
@@ -63,7 +63,7 @@ class MyAlg:
         api = VWAPI()
 
         print('\t getting targets ...')
-        utils.debug_print(str(target_examples))
+        #utils.debug_print(str(target_examples))
 
         # assume target_examples are in perserved index order
         examples = [example['meta']['features'] for example in target_examples]
@@ -90,7 +90,7 @@ class MyAlg:
         ret = None
 
         importances = butler.algorithms.get(key='importances')
-        answered = butler.algorithms.get(key='answered_idxs')
+        answered = set(butler.algorithms.get(key='answered_idxs'))
 
         filtered_importances = [importance for importance in importances if importance not in answered]
 
@@ -117,7 +117,7 @@ class MyAlg:
 
 
     def teach(self, butler, args):
-        print(args)
+        #print(args)
         args = json.loads(args)
         target_label = args['args']['target_label']
         example = args['args']['example']
@@ -160,8 +160,8 @@ class MyAlg:
         # Create hold out set for accuracy evaluation
         if (num_reported_answers % 4) == 0:
             print('\t **** We held out an example, yay!')
-            butler.algorithms.append(key='hold_out', value=(target_index, target_label))
-            k = butler.algorithms.get(key='hold_out')
+            butler.experiment.append(key='hold_out', value=(target_index, target_label))
+            k = butler.experiment.get(key='hold_out')
             print k, ' ... is our hold out set'
         else: # store off hold out example for proper evaluation testing
 
@@ -197,7 +197,7 @@ class MyAlg:
 
         butler.algorithms.set(key='mock_precision', value=mock_precision)
         ret = butler.algorithms.get(key=['mock_precision', 'num_reported_answers'])
-        print ret
+        #print ret
 
         print('num reported', num_reported_answers, '<')
         print type(num_reported_answers), type(mock_precision)
@@ -207,32 +207,33 @@ class MyAlg:
         print type(num_reported_answers), type(mock_precision)
 
         # Debug area for getting hold out accuracy
-        hold_out = butler.algorithms.get(key='hold_out')
+        hold_out = set(butler.experiment.get(key='hold_out'))
         print('\t ***', hold_out, ' is hold out')
 
         if hold_out: # during inital queries it can be null beause nothing was held out
             print('\t *** len of hold out: ', len(hold_out)) # have length
-            print(hold_out[-1]) # make sure we have something here... have
 
             # so here we have a hold out and we need to test with it
             #examples = [example['meta']['features'] for example in butler.targets.get_targetset(butler.exp_uid)]
             hold_out_features = [butler.targets.get_target_item(butler.exp_uid, value[0])['meta']['features']\
                                     for value in hold_out]
 
-            print(len(held_out_examples))
+            print(len(hold_out_features))
 
-            api = api.VW_API()
+            api = VWAPI()
 
-            answers = api.get_bulk_responses(held_out_features)
+            answers = api.get_bulk_responses(hold_out_features)
             print('\t closing/shutting down api')
             api.vw.close() # del doesn't seemt to close socket :-/
             del api
 
             print ' this is an answer! '
-            print answers[0], answers[0].response
+            print answers[0], answers[0].prediction
+            print answers
 
-            # scores = [answer.response==held_out_example[1] for answer, held_out_example in zip(answers, held_out_examples)]
-            #mock_precision = sum(scores)/len(scores)
+            scores = [answer.prediction == held_out_example[1] for answer, held_out_example in zip(answers, hold_out)]
+            print(scores)
+            mock_precision = sum(scores)/len(scores)
 
         # this return is identical to get()
         #return butler.algorithms.get(key=['mock_precision', 'num_reported_answers'])
