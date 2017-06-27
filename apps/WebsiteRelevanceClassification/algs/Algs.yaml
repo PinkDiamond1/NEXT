@@ -37,10 +37,6 @@ getModel:
     type: dict
     description: The current state of the model
     values:
-      #exp_uid:
-      #  type: str
-      #alg_label:
-      #  type: str
       precision:
         type: num
         description: a fake precision, calculated asynch
