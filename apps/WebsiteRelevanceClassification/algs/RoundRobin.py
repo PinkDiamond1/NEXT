@@ -226,7 +226,9 @@ class MyAlg:
             api.vw.close() # del doesn't seemt to close socket :-/
             del api
 
-            scores = [answer.prediction == held_out_example[1] for answer, held_out_example in zip(answers, hold_out)]
+            # Here we compare signs for the predicted answer and the held example
+            # a cheap way to threshold the linear regression to a categorical variable
+            scores = [(answer.prediction < 0) == (held_out_example[1] < 0) for answer, held_out_example in zip(answers, hold_out)]
             precision = sum(scores)/len(scores)
 
             print(scores, precision)
