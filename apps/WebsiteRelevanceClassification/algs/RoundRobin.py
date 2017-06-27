@@ -43,6 +43,7 @@ class MyAlg:
         # ... might as well keep track of the number of reported answers for
         # overall tracking purposes. Might be more appropriate in MyApp.py
         butler.algorithms.set(key='num_reported_answers', value=0)
+
         return True
 
     def train_learner(self):
@@ -63,20 +64,15 @@ class MyAlg:
         api = VWAPI()
 
         print('\t getting targets ...')
-        #utils.debug_print(str(target_examples))
 
         # assume target_examples are in perserved index order
         examples = [example['meta']['features'] for example in target_examples]
-        #print('\t calling my battle heavy get_bulk_responses...')
         answers = api.get_bulk_responses(examples)
-
-        #utils.debug_print(str(answers))
 
         print('\t closing/shutting down api')
         api.vw.close() # del doesn't seemt to close socket :-/
         del api
 
-        print('\t returning importances, apply np.argsort')
         importances = [answer.importance for answer in answers]
         ordered_importances = np.argsort(importances)
 
@@ -102,7 +98,13 @@ class MyAlg:
 
     def getQuery(self, butler, participant_uid):
         importances = self.get_n_importances(butler, 5)
-        assert len(importances) > 0, 'getQuery: importances list is empty!'
+        num_reported_answers = butler.experiment.get(key='num_reported_answers')
+        N = butler.experiment.get(key='n')
+
+        # Check that the experiment isn't over ...
+        assert num_reported_answers < N, '*** Experiment is over. All unique examples have been labeled by humans ***'
+
+        assert len(importances) > 0, 'getQuery: importances list is empty! But unanswered examples still exist!'
 
         return np.random.choice(importances, 1)[0]
 
@@ -193,7 +195,6 @@ class MyAlg:
     def getModel(self, butler):
         precision = random.random()
 
-        # ?nextml bug, this returns None even though get the same call works in processAnswer above
         num_reported_answers = butler.experiment.get(key='num_reported_answers')
 
         butler.algorithms.set(key='precision', value=precision)
