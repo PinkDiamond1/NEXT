@@ -44,7 +44,7 @@ getModel:
     values:
       precision:
         type: num
-        description: Made up precision estimates
+        description: Held out precision scores
       num_reported_answers:
         type: num
         description: The number of reported answers (for this algorithm)
