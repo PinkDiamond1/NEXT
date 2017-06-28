@@ -45,9 +45,9 @@ class MyAlg:
         imps = butler.algorithms.get(key='importances')
         print('\t *** imps: ', len(imps))
         imps = butler.algorithms.get(key='n')
-        print('\t *** n: ', len(imps))
+        print('\t *** n: ', imps)
         imps = butler.algorithms.get(key='num_reported_answers')
-        print('\t *** num_reported_answers: ', len(imps))
+        print('\t *** num_reported_answers: ', imps)
 
         return True
 
@@ -62,6 +62,8 @@ class MyAlg:
         If you want to train a unique learner simple use the NextML API to retrieve
         the examples and transform them however is desired.
         """
+
+        # could read out of butler.memory (stsievert) or butler.application
         pass
 
     def get_importances(self, butler=None, target_examples=None, update=False):
@@ -137,6 +139,7 @@ class MyAlg:
         print('\t*** about to teach ...')
         api = VWAPI()
 
+        # products are represented as a bag of words (and maybe syntax too)
         vw_example = api.to_vw_examples([example])
 
         #print("\t*** vw_example: ", str(vw_example))

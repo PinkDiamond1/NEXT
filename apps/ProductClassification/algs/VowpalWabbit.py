@@ -45,9 +45,9 @@ class MyAlg:
         imps = butler.algorithms.get(key='importances')
         print('\t *** imps: ', len(imps))
         imps = butler.algorithms.get(key='n')
-        print('\t *** n: ', len(imps))
+        print('\t *** n: ', imps)
         imps = butler.algorithms.get(key='num_reported_answers')
-        print('\t *** num_reported_answers: ', len(imps))
+        print('\t *** num_reported_answers: ', imps)
 
         return True
 
