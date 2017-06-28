@@ -68,7 +68,7 @@ class MyAlg:
 
     def get_importances(self, butler=None, target_examples=None, update=False):
         print('\t in get importances ...')
-        api = VWAPI(task="product classification")
+        api = VWAPI(task="product classification", host="VW_PRODUCT")
 
         print('\t getting targets ...')
 
@@ -137,7 +137,7 @@ class MyAlg:
         example = args['args']['example']
 
         print('\t*** about to teach ...')
-        api = VWAPI(task="product classification")
+        api = VWAPI(task="product classification", host="VW_PRODUCT")
 
         # products are represented as a bag of words (and maybe syntax too)
         vw_example = api.to_vw_examples([example])
@@ -231,7 +231,7 @@ class MyAlg:
 
             print(len(hold_out_features))
 
-            api = VWAPI(task="product classification")
+            api = VWAPI(task="product classification", host="VW_PRODUCT")
 
             answers = api.get_bulk_responses(hold_out_features)
             api.vw.close() # del doesn't seemt to close socket :-/
