@@ -49,7 +49,7 @@ minionworker:
      - CELERY_DASHBOARD_WORKER_COUNT=1
      - CELERY_THREADS_PER_DASHBOARD_WORKER=2
      - CELERY_DASHBOARD_WORKER_PREFETCH=1
-     - GIT_HASH=e23d7328083a53f2f80cb29b8a522ca0ebfbe564
+     - GIT_HASH=7a0e3531eed02f68af4cf476c08eb70e93573537
      - PYTHONPATH=:/next_backend
 ####################################
 
@@ -125,13 +125,22 @@ rabbitmqredis:
     image: redis
 ###########################
 
-######### VW (WEBSITE RELEVANCE) #########
+######### VW (WEBSITE RELEVANCE, PRODUCT CLASSIFICATION) #########
 vw_relevance:
     build: ../next/vowpal_wabbit_image/
     command: ["--save_resume --port 7000 --active --predictions /dev/null --daemon --audit"]
     container_name: vw_relevance
     ports:
         - "0.0.0.0:7000:7000"
+    volumes:
+        - ../next/vowpal_wabbit_image/saved_models:/saved_models
+
+vw_product:
+    build: ../next/vowpal_wabbit_image/
+    command: ["--save_resume --port 9000 --active --predictions /dev/null --daemon --audit"]
+    container_name: vw_product
+    ports:
+        - "0.0.0.0:9000:9000"
     volumes:
         - ../next/vowpal_wabbit_image/saved_models:/saved_models
 ###########################

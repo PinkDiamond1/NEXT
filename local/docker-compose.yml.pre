@@ -125,13 +125,22 @@ rabbitmqredis:
     image: redis
 ###########################
 
-######### VW (WEBSITE RELEVANCE) #########
+######### VW (WEBSITE RELEVANCE, PRODUCT CLASSIFICATION) #########
 vw_relevance:
     build: ../next/vowpal_wabbit_image/
     command: ["--save_resume --port 7000 --active --predictions /dev/null --daemon --audit"]
     container_name: vw_relevance
     ports:
         - "0.0.0.0:7000:7000"
+    volumes:
+        - ../next/vowpal_wabbit_image/saved_models:/saved_models
+
+vw_product:
+    build: ../next/vowpal_wabbit_image/
+    command: ["--save_resume --port 9000 --active --predictions /dev/null --daemon --audit"]
+    container_name: vw_product
+    ports:
+        - "0.0.0.0:9000:9000"
     volumes:
         - ../next/vowpal_wabbit_image/saved_models:/saved_models
 ###########################
