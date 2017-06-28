@@ -39,6 +39,7 @@ minionworker:
       - rabbitmqredis:RABBITREDIS
       - minionredis:MINIONREDIS
       - vw_relevance:VW_RELEVANCE
+      - vw_product:VW_PRODUCT
     environment:
      - PYTHONUNBUFFERED=TRUE
      - CELERY_SYNC_WORKER_COUNT=6
