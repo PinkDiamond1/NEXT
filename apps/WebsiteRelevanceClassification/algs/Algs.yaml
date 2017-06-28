@@ -39,7 +39,7 @@ getModel:
     values:
       precision:
         type: num
-        description: a fake precision, calculated asynch
+        description: precision, calculated asynch
       num_reported_answers:
         type: num
         description: The number of reported answers (for this algorithm)
