@@ -1,5 +1,5 @@
-**World Bank Specific:** Standing up and training of the Oracles
-
+**World Bank Specific:** [Standing up and training of the Oracles](https://github.com/worldbank/NEXT/wiki/Standing-up-and-training-of-the-Oracles)
+___
 *Have a question? Ask us on Gitter!* [![gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/next-ml/Lobby?utm_source=share-link&utm_medium=link&utm_campaign=share-link) *We encourage asking the dev team questions*
 
 **Documentation:** https://github.com/nextml/NEXT/wiki
