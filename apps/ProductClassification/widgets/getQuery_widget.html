@@ -1,58 +1,64 @@
 <style>
-  html,body{
-  height:100%;
-  }
-
-  div.container{
-  height:100%;
-  }
-
-  #wrapper {
-    height:85%;
-  }
-
-  div.row > div.col-xs-6 {
-    height:100%;
-    outline: 1px solid black;
-  }
-
-  div.row > div.col-xs-12 {
-    height:100%;
-    outline: 1px solid black;
-  }
-
-  #wrapper > div.row {
-    height:50%;
-  }
-
-  #wrapper img{
-    max-height:100%;
-    max-width:100%;
-    height:auto;
-  }
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,700">
 </style>
-<br/>
-<div class="row" style="height:50%">
-  <!-- Center Target -->
-  <div class="col-xs-12" id="center" >
-    <div>
-      <div>{{ query }}</div>
+
+<style>
+.hover-me:hover{
+  filter: brightness(125%);
+}
+
+.container{
+ height:10%;
+}
+</style>
+
+
+<div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h1 class="text-muted">Is this generally something a business could offer or sell?</h1>
+            </div>
+        </div>
+</div>
+
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-4">
+            <h1 class="text-right">Business Name:</h1>
+        </div>
+        <div class="col-xs-8">
+            <h1>{{query.target_indices.business_name}}</h1>
+        </div>
     </div>
-  </div>
-</div>
-<br/>
-<div class="row">
-  <!-- Left Target -->
-  <div class="col-xs-6" id="left">
-    <div>No (-1)</div>
-  </div>
-
-  <!-- Right Target -->
-  <div class="col-xs-6" id="right">
-    <div>Yes (+1)</div>
-  </div>
 </div>
 
+<div class="container">
+    <div class="row">
+        <div class="col-xs-4">
+            <h1 class="text-right">Item/Service:</h1>
+        </div>
+        <div class="col-xs-8">
+            <h1>"{{query.target_indices.meta.features}}" ?</h1>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-xs-6" id="left">
+            <h1 class="text-center hover-me" style="background-color:#f98972;">no </h1>
+        </div>
+        <div class="col-xs-6 hover-me" id="right">
+            <h1 class="text-center hover-me" style="background-color:#7ad1b5;">yes </h1>
+        </div>
+    </div>
+    <div class="col-xs-12 text-center">
+        <p>* opens a new window</p>
+    </div>
+    <div class="col-xs-12 text-center">
+        <p/ style="font-style: italic"><b>hint</b>: left arrow for "no," right arrow for "yes"
+</div>
 
 <script>
   document.onkeydown = checkKey;
@@ -85,9 +91,4 @@
   $('#left').click(function() {
   	submit_left();
   });
-
-
-
 </script>
-</div>
-

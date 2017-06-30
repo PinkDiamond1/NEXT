@@ -136,9 +136,11 @@ vw_relevance:
     volumes:
         - ../next/vowpal_wabbit_image/saved_models:/saved_models
 
+# for product we want to use parameters that show good multi classification proformance
+# see: https://requestersandbox.mturk.com/developer
 vw_product:
     build: ../next/vowpal_wabbit_image/
-    command: ["--save_resume --port 9000 --active --predictions /dev/null --daemon --audit"]
+    command: ["--save_resume --port 9000 --active --predictions /dev/null --daemon --audit -b25 --skips 2 --ngram 2 --loss_function logistic"]
     container_name: vw_product
     ports:
         - "0.0.0.0:9000:9000"

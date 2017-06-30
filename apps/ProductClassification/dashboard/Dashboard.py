@@ -32,21 +32,6 @@ class MyAppDashboard(AppDashboard):
 
         test_queries, didSucceed, message = butler.db.get_docs_with_filter(app.app_id+':queries',{'exp_uid':app.exp_uid, 'alg_label':test_alg_label})
 
-
-        print('\n in multi line plot function 2')
-        test_S = [(query['target_index'], query['target_label'])
-                            for query in test_queries
-                            if 'target_index' in query.keys()]
-
-        #targets = butler.targets.get_targetset(app.exp_uid)
-        #targets = sorted(targets,key=lambda x: x['target_id'])
-        #target_features = []
-
-        #for target_index in range(len(targets)):
-        #    target_vec = targets[target_index]['meta']['features']
-        #    target_vec.append(1.)
-        #    target_features.append(target_vec)
-
         x_min = numpy.float('inf')
         x_max = -numpy.float('inf')
         y_min = numpy.float('inf')
@@ -71,7 +56,6 @@ class MyAppDashboard(AppDashboard):
                 y.append(err)
 
             # this would be taken from a call to get_responses on
-            #debug: proves we can retrive model precision w/in context of NextML
             x = numpy.argsort(x)
             x = [x[i] for i in x]
             y = [y[i] for i in x]
@@ -102,7 +86,7 @@ class MyAppDashboard(AppDashboard):
         ax.set_xlim([x_min,x_max])
         ax.set_ylim([y_min-width,y_max+width])
         ax.grid(color='white', linestyle='solid')
-        ax.set_title('Website Relevance Accuracy on Held Out Examples (higher is better)' , size=14)
+        ax.set_title('Product Classification Accuracy on Held Out Examples (higher is better)' , size=14)
         legend = ax.legend(loc=2,ncol=3,mode="expand")
         for label in legend.get_texts():
             label.set_fontsize('small')
