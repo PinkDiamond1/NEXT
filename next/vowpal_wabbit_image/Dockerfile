@@ -1,4 +1,6 @@
-FROM ubuntu:14.04
+FROM ubuntu:14.04a
+# openjdk required for vowpal wabbit cluster mode
+FROM openjdk:7-jdk
 MAINTAINER "Kwame Porter Robinson" kporterrobinson@gmail.com
 
 RUN apt-get update &&\

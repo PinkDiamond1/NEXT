@@ -21,17 +21,17 @@ minionredis:
     image: redis
     command: redis-server /next_backend/next/database_client/CacheStore/redis.conf
     volumes:
-     - /hdd/work/NEXT:/next_backend
+     - /home/ubuntu/NEXT:/next_backend
     expose:
      - "6379"
     stdin_open: true # to allow debugging
     tty: true
 
 minionworker:
-    build: /hdd/work/NEXT/next/base_docker_image
+    build: /home/ubuntu/NEXT/next/base_docker_image
     command: ./next/broker/next_worker_startup.sh
     volumes:
-     - /hdd/work/NEXT:/next_backend
+     - /home/ubuntu/NEXT:/next_backend
     working_dir: /next_backend
     links:
       - mongodb:MONGODB
@@ -50,17 +50,17 @@ minionworker:
      - CELERY_DASHBOARD_WORKER_COUNT=1
      - CELERY_THREADS_PER_DASHBOARD_WORKER=2
      - CELERY_DASHBOARD_WORKER_PREFETCH=1
-     - GIT_HASH=1bcec4c3ac12a7477921820e15e062fa3c5cce92
+     - GIT_HASH=a0bb5e155f34456fae62a73e4f588110b1e2a222
      - PYTHONPATH=:/next_backend
 ####################################
 
 
 ######### API #########
 nextbackenddocker:
-    build: /hdd/work/NEXT/next/base_docker_image
+    build: /home/ubuntu/NEXT/next/base_docker_image
     command: gunicorn  --worker-class=gevent -R --log-level=debug --logger-class=simple --reload -b 0.0.0.0:8000 -w 1 next.api.api:app
     volumes:
-     - /hdd/work/NEXT:/next_backend
+     - /home/ubuntu/NEXT:/next_backend
     working_dir: /next_backend
     ports:
       - "0.0.0.0:8000:8000" # gunicorn
@@ -84,10 +84,10 @@ nextbackenddocker:
 
 ######### PERSISTENT STORE #########
 mongodb:
-    build: /hdd/work/NEXT/next/base_docker_image
+    build: /home/ubuntu/NEXT/next/base_docker_image
     command: /usr/bin/mongod --smallfiles --rest
     volumes:
-     - /hdd/work/NEXT:/next_backend
+     - /home/ubuntu/NEXT:/next_backend
      - /dump
      - /data/db
     working_dir: /next_backend
@@ -97,10 +97,10 @@ mongodb:
      - "0.0.0.0:28017:28017" # mongo http monitor
 
 mongodbbackup:
-    build: /hdd/work/NEXT/next/base_docker_image
+    build: /home/ubuntu/NEXT/next/base_docker_image
     command: python ./next/database/daemon_database_backup.py
     volumes:
-     - /hdd/work/NEXT:/next_backend
+     - /home/ubuntu/NEXT:/next_backend
     volumes_from:
      - mongodb
     working_dir: /next_backend
