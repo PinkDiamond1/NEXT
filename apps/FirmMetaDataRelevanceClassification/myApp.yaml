@@ -5,6 +5,9 @@ initExp:
   args:
     args:
       values:
+        idx:
+          description: starting idx to start fetching unverified businesses from
+          type: num
         alg_list:
           values:
             values:
@@ -26,7 +29,8 @@ initExp:
                         description: A feature vector for this item. 
                         type: list
                         values: 
-                          type: num                
+                          type: num
+
 processAnswer:
   args:
     args:

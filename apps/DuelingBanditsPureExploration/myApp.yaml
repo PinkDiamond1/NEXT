@@ -27,6 +27,10 @@ initExp:
           type: str
           values: [image, text, video]
           optional: true
+        idx:
+          description: Index to start serving unverified submitted business regions from 
+          type: num
+
           
 processAnswer:
   args:

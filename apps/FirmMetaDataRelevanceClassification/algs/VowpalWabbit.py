@@ -26,7 +26,7 @@ class MyAlg:
         assert n != None, "\t alg, initExp: value n is None!"
         # Save off (a) and (c) objects from above description, and set answered indices
         butler.algorithms.set(key='n', value=n) # should this be set at the experiment level?
-        butler.algorithms.set(key='answered_idxs', value=[])# techincall sets can't be stored? Seems to work
+        butler.algorithms.set(key='answered_idxs', value=[])
 
         print('\t appear to have successfully set the butler...')
         print('\t attempting to get importances, set importances key')
@@ -36,19 +36,19 @@ class MyAlg:
 
         # note: we block on this call, that's okay beacuse we only init once.
         # future calls should be done asynch
-        importances = self.get_importances(target_examples=butler.targets.get_targetset(butler.exp_uid))
-        butler.algorithms.set(key='importances', value=importances)
+        #importances = self.get_importances(target_examples=butler.targets.get_targetset(butler.exp_uid))
+        #butler.algorithms.set(key='importances', value=importances)
 
         # ... might as well keep track of the number of reported answers for
         # overall tracking purposes. Might be more appropriate in MyApp.py
         butler.algorithms.set(key='num_reported_answers', value=0)
 
-        imps = butler.algorithms.get(key='importances')
-        print('\t *** imps: ', len(imps))
-        imps = butler.algorithms.get(key='n')
-        print('\t *** n: ', imps)
-        imps = butler.algorithms.get(key='num_reported_answers')
-        print('\t *** num_reported_answers: ', imps)
+        #imps = butler.algorithms.get(key='importances')
+        #print('\t *** imps: ', len(imps))
+        #imps = butler.algorithms.get(key='n')
+        #print('\t *** n: ', imps)
+        #imps = butler.algorithms.get(key='num_reported_answers')
+        #print('\t *** num_reported_answers: ', imps)
 
         return True
 
@@ -105,19 +105,7 @@ class MyAlg:
         return ret
 
     def getQuery(self, butler, participant_uid):
-        importances = self.get_n_importances(butler, 5)
-        num_reported_answers = butler.algorithms.get(key='num_reported_answers')
-        N = butler.algorithms.get(key='n')
-
-        print('getQuery ', 'N', N, ' num_reported_answers ', num_reported_answers)
-        print('importances ', importances)
-
-        # Check that the experiment isn't over ...
-        assert num_reported_answers < N, '*** Experiment is over. All unique examples have been labeled by humans ***'
-
-        assert len(importances) > 0, 'getQuery: importances list is empty! But unanswered examples still exist!'
-
-        return np.random.choice(importances, 1)[0]
+        return True
 
     def call_get_importances(self, butler, args=None):
         # proxy function to call get_importances since job signatures are different
@@ -138,7 +126,7 @@ class MyAlg:
         example = args['args']['example']
 
         print('\t*** about to teach ...')
-        api = VWAPI()
+        api = VWAPI(task='metadata', host='localhost', port=10000)
 
         # products are represented as a bag of words (and maybe syntax too)
         vw_example = api.to_vw_examples([example])
@@ -262,7 +250,7 @@ class MyAlg:
 
             print(len(hold_out_features))
 
-            api = VWAPI()
+            api = VWAPI(task='metadata', host='localhost', port=10000)
 
             answers = api.get_bulk_responses(hold_out_features)
             api.vw.close() # del doesn't seemt to close socket :-/
