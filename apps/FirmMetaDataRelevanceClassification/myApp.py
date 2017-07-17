@@ -5,7 +5,7 @@ import next.apps.SimpleTargetManager
 
 class MyApp:
     def __init__(self, db):
-        self.app_id = 'WebsiteRelevanceClassification'
+        self.app_id = 'FirmMetaDataRelevanceClassification'
         self.TargetManager = next.apps.SimpleTargetManager.SimpleTargetManager(db)
 
     def initExp(self, butler, init_algs, args):
@@ -55,9 +55,4 @@ class MyApp:
         return {'target_index':target['target_id'],'target_label':target_label}
 
     def getModel(self, butler, alg, args):
-        ## can return from app level, don't need to go into the alg
-        #alg_label = args['alg_label']
-        #mock_precision = random.random()
-        #num_reported_answers = butler.experiment.get(key='num_reported_answers_for_' + alg_label)
-        #return {'mock_precision': mock_precision, 'num_reported_answers': num_reported_answers}
         return alg()

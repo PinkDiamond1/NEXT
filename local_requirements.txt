@@ -3,3 +3,4 @@ requests
 ply
 joblib
 git+git://github.com/robinsonkwame/wabbit_wappa # base library for access to vowpal wabbit; submitted PR to wabbit_wappa
+MongoEngine

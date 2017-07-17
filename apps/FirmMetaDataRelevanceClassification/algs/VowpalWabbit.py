@@ -5,6 +5,7 @@ import next.utils as utils
 import random
 from collections import defaultdict
 from vw_api import VWAPI
+import pymongo
 
 class MyAlg:
     def initExp(self, butler, n):
@@ -170,8 +171,6 @@ class MyAlg:
 
         #print('\t *** is example: ',  example)
 
-        # Debug
-
         # Create hold out set for accuracy evaluation
         if (num_reported_answers % 4) == 0:
             print('\t **** We held out an example, yay!')
@@ -199,9 +198,41 @@ class MyAlg:
                                    }),
                        time_limit=30)
 
-            #butler.job('getModel', {}, time_limit=30)
+        # If target_label is positive then we remove from the mongodb database
+        # ... using butler.job bcause we're not sure how long it'll take to connec to db and remove from it
+        if target_label == -1: # a positive label (see getquery_widget.html page)
+            print('\t ... going to remove this instance from the data base')
+            butler.job('remove_metadata',
+                       json.dumps({'args': {'target_index':target_index}}),
+                       time_limit=600)
 
         return True
+
+    def remove_metadata(self, butler, args):
+        business_name = butler.targets.get_target_item(butler.exp_uid, target_index)['business_name']
+        region = butler.targets.get_target_item(butler.exp_uid, target_index)['region']
+
+        # get cursor to db, get collection, delete given (business, region) from new database
+        # so it's no longer served
+        client = pymong.MongoClient()# connects to metadata firm webapp db
+        db = client['flaskr'] # this should be in the api, as a constant
+        collection = db['new_business_region']
+        result = collection.delete_many({'business_name': business_name,
+                                         'region': region})
+
+        # Also need to mark submitted data with label
+        collection = db['submitted_business_region']
+        doc = collection.find_one({'business_name': business_name,
+                               'region': region})
+        if doc is not None:
+            doc['verified'] = True
+            collection.save(doc)
+
+        # so now an outside process can continiously pull for verified=True documents in the
+        # submitted collection and join them to product and website names, yay!
+
+        # This outside process is essentially Stage 5
+
 
     def getModel(self, butler):
         precision = random.random()
