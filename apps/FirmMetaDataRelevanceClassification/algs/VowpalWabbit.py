@@ -69,7 +69,7 @@ class MyAlg:
 
     def get_importances(self, butler=None, target_examples=None, update=False):
         print('\t in get importances ...')
-        api = VWAPI()
+        api = VWAPI() # TODO: use VW_METADATA, port=10000
 
         print('\t getting targets ...')
 
@@ -144,6 +144,11 @@ class MyAlg:
         print('\t*** ... taught')
 
     def processAnswer(self, butler, target_index, target_label):
+
+        return True
+
+        # TODO: fix up to teach and/or do hold out, given below
+
         # S maintains a list of labelled items. Appending to S will create it.
         butler.algorithms.append(key='S', value=(target_index, target_label))
 

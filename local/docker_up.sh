@@ -15,6 +15,7 @@ export AWS_BUCKET_NAME=next-database-backups
 export ACTIVE_MASTER=$HOST
 export SLAVE_LIST=
 export NEXT_BACKEND_GLOBAL_HOST=$HOST
+export LOCAL_HOST=`route | awk '/^default/ {print $2}'`
 
 
 modify_ports=false
@@ -57,6 +58,7 @@ fi
 
 cp -f docker-compose.yml.pre docker-compose.yml
 git_hash="$(git rev-parse HEAD)"
+sed -i -e 's|{{LOCAL_HOST}}|'"$LOCAL_HOST"'|g' docker-compose.yml
 sed -i -e 's|{{NEXT_DIR}}|'"$dir"'|g' docker-compose.yml
 sed -i -e 's|{{GIT_HASH}}|'"$git_hash"'|g' docker-compose.yml
 
