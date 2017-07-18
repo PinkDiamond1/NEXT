@@ -41,9 +41,6 @@ minionworker:
       - vw_relevance:VW_RELEVANCE
       - vw_product:VW_PRODUCT
       - vw_metadata:VW_METADATA
-    net: "host" # see Flask app
-    extra_hosts: # communicating with Flask app mongodb
-     - "flask_app:10.0.1.1"
     environment:
      - PYTHONUNBUFFERED=TRUE
      - CELERY_SYNC_WORKER_COUNT=6
@@ -54,8 +51,10 @@ minionworker:
      - CELERY_DASHBOARD_WORKER_COUNT=1
      - CELERY_THREADS_PER_DASHBOARD_WORKER=2
      - CELERY_DASHBOARD_WORKER_PREFETCH=1
-     - GIT_HASH=ae4af9764d16b06d47d55f9e13714c4a44cfbe60
+     - GIT_HASH=384f1bb35989e8144583f001638d3ed6c3fe450e
      - PYTHONPATH=:/next_backend
+    extra_hosts:
+     - "FLASK_APP:172.17.0.1"
 ####################################
 
 

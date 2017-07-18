@@ -75,7 +75,7 @@ class MyApp:
 
         # First we remove from new business region collection if verified correct so that
         # we don't serve it up again
-        client = pymongo.MongoClient(host="flask_app", port=30000)
+        client = pymongo.MongoClient(host="FLASK_APP", port=30000)
         db = client['flaskr_db']
         if target_label == -1: # -1 indicates was verified correctly (see query widget on -1/1 label assignment)
             print('\t would have delete many off of target', target)
