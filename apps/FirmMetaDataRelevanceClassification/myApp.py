@@ -81,34 +81,36 @@ class MyApp:
         print('idx ', idx)
 
         # Handle answer...
-
         # First we remove from new business region collection if verified correct so that
         # we don't serve it up again
         # Note this sectin is blocking (meaning it slows down other processAnswer queries via myApp)
-        client = pymongo.MongoClient(host="FLASK_APP", port=30000) #FLASK_APP, port number should be part of an api class
-        db = client['flaskr_db']
-        if target_label == -1: # -1 indicates was verified correctly (see query widget on -1/1 label assignment)
-            print('\t would have delete many off of target', target)
-            print('\t ... role', target[u'role'])
-            print('\t ... yeah...')
-            # There is, unfortunately, a one to many (3 to be exact) relationship between new business regions and
-            # the NextML submitted business region format, where NextML has a row for each role typ (CEO, manager, employee)
-            #
-            # What this means is that we may delete an item from new business just off of the success
-            # of one role. However, if we come across an incorrectly submitted role we must re add that
-            # to the webapp database.
-            ret = db['new_business_region'].delete_many({'business_name':target['business_name'],
-                                                         'region':target['region']})
-            print({'business_name':target['business_name'], 'region':target['region']})
-            print('ret is ', ret)
 
-            # ... now we also need to indcate in submitted business region that this is correct
-            db['submitted_business_region'].update_one({'business_name':target['business_name'],
-                                                        'region':target['region'],
-                                                        'role': target['role']},
-                                                         {'$set':{'verified':True}})
+	if 'business_name' in target: # saw a case were it had no name, if exp is over, etc :-/
+	    client = pymongo.MongoClient(host="FLASK_APP", port=30000) #FLASK_APP, port number should be part of an api class
+	    db = client['flaskr_db']
+	    if target_label == -1: # -1 indicates was verified correctly (see query widget on -1/1 label assignment)
+		# There is, unfortunately, a one to many (3 to be exact) relationship between new business regions and
+		# the NextML submitted business region format, where NextML has a row for each role typ (CEO, manager, employee)
+		#
+		# What this means is that we may delete an item from new business just off of the success
+		# of one role. However, if we come across an incorrectly submitted role we must re add that
+		# to the webapp database.
+		ret = db['new_business_region'].delete_many({'business_name':target['business_name'],
+							     'region':target['region']})
 
-        # else we leave it in the new business region for another turker to correctly identify information for
+		# ... now we also need to indcate in submitted business region that this is correct
+		db['submitted_business_region'].find_and_modify(query={'business_name': target['business_name'],
+								    'region': target['region'],
+								    target['role']: target['name']},
+								upsert=True,
+								update={'$set':{'verified':True}})
+	    else:
+		# add back in this region since one of the roles is not verified to be correct
+		db['new_business_region'].update_one(filter={'business_name':target['business_name'],
+							     'region':target['region']},
+						     upsert=True,
+						     update={'$set':{'business_name': target['business_name'],
+								     'region': target['region']}})
 
         #if target_label == 1: # data is not on the role, business region :(
         # re-add to new business region
