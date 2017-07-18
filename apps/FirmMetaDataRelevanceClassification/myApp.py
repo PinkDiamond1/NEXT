@@ -75,7 +75,8 @@ class MyApp:
 
         # First we remove from new business region collection if verified correct so that
         # we don't serve it up again
-        client = pymongo.MongoClient(host="FLASK_APP", port=30000)
+        # Note this sectin is blocking (meaning it slows down other processAnswer queries via myApp)
+        client = pymongo.MongoClient(host="FLASK_APP", port=30000) #FLASK_APP, port number should be part of an api class
         db = client['flaskr_db']
         if target_label == -1: # -1 indicates was verified correctly (see query widget on -1/1 label assignment)
             print('\t would have delete many off of target', target)
@@ -84,35 +85,26 @@ class MyApp:
             # There is, unfortunately, a one to many (3 to be exact) relationship between new business regions and
             # the NextML submitted business region format, where NextML has a row for each role typ (CEO, manager, employee)
             #
-            # What this means is that we may delete an item from new business just off of the sucess
+            # What this means is that we may delete an item from new business just off of the success
             # of one role. However, if we come across an incorrectly submitted role we must re add that
             # to the webapp database.
-            #ret = db['new_business_region'].delete_many({'business_name':target['business_name'],
-            #                                             'region':target['region']})
-            for doc in db['new_business_region'].find():
-                print(doc)
+            ret = db['new_business_region'].delete_many({'business_name':target['business_name'],
+                                                         'region':target['region']})
             print({'business_name':target['business_name'], 'region':target['region']})
             print('ret is ', ret)
 
             # ... now we also need to indcate in submitted business region that this is correct
-            #db = client['submitted_business_region']
-            #db.update_one({'business_name':target['business_name'],
-            #                'region':target['region'],
-            #                'role': target['role']},
-            #                 {'$set':{'verified':True}}
+            db['submitted_business_region'].update_one({'business_name':target['business_name'],
+                                                        'region':target['region'],
+                                                        'role': target['role']},
+                                                         {'$set':{'verified':True}})
 
-            # then add in vw to right port,
-            # then add in tokenized web data
         # else we leave it in the new business region for another turker to correctly identify information for
 
         #if target_label == 1: # data is not on the role, business region :(
         # re-add to new business region
 
-        if num_reported_answers >= n:
-            # experiment is over because all submitted business have been verified as correct
-            raise Exception, "Experiment is over; all submitted businesses in experiment are correct!"
-
-
+        assert num_reported_answers <= n, "Experiment is over; all submitted businesses in experiment are correct!"
 
         print(query)
 
