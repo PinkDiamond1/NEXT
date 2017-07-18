@@ -71,6 +71,15 @@ class MyApp:
         n = butler.experiment.get(key='args')['n']
         num_reported_answers = butler.experiment.increment(key='num_reported_answers_for_' + query['alg_label'])
 
+        # This is a really awkward way to increment the idx value; i can't seem mess w/ .experiment
+        # in the initExp above so then I'm forced to use 'args' dictionary
+        args = butler.experiment.get(key='args')
+        args['idx'] += 1
+        butler.experiment.set(key='args', value=args)
+        idx = args['idx']
+
+        print('idx ', idx)
+
         # Handle answer...
 
         # First we remove from new business region collection if verified correct so that
